@@ -139,7 +139,7 @@ test("gives health a dedicated DNA scene and professional reveal system", async 
   assert.match(css, /\[data-reveal\]\[data-revealed="true"\]/);
 });
 
-test("scrubs cinematic scene cameras from chapter scroll progress", async () => {
+test("synchronizes story text and scene cameras to one chapter progress", async () => {
   const response = await render();
   const [html, sceneSource, css] = await Promise.all([
     response.text(),
@@ -154,7 +154,9 @@ test("scrubs cinematic scene cameras from chapter scroll progress", async () => 
     (match) => match[1],
   );
   assert.equal(new Set(healthSteps).size, 3);
-  assert.match(html, /data-scroll-copy/);
+  const scrollCopyTags = html.match(/<[^>]+data-scroll-copy[^>]*>/g) ?? [];
+  assert.ok(scrollCopyTags.length >= 6);
+  scrollCopyTags.forEach((tag) => assert.doesNotMatch(tag, /data-reveal/));
   assert.match(sceneSource, /function getChapterProgress/);
   assert.match(sceneSource, /addEventListener\("scroll"/);
   assert.match(sceneSource, /drawDna\([^)]*\bprogress\b[^)]*\)/);
@@ -164,10 +166,19 @@ test("scrubs cinematic scene cameras from chapter scroll progress", async () => 
   assert.match(sceneSource, /translate\([^)]*progress/);
   assert.match(sceneSource, /scale\([^)]*progress/);
   assert.match(sceneSource, /reducedMotion\s*\?\s*[\d.]+\s*:\s*getChapterProgress/);
-  assert.match(css, /\[data-scroll-copy\][^{]*\{[^}]*animation-timeline:\s*view\(\)[^}]*animation-range:/s);
+  assert.doesNotMatch(css, /(?:animation|view|scroll)-timeline|@keyframes\s+scroll-copy/i);
+  assert.match(sceneSource, /function updateStoryBeats\([^)]*progress[^)]*reducedMotion[^)]*\)/);
+  assert.match(sceneSource, /renderScene\([^;]*displayedProgress[^;]*\)/s);
+  assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
+  assert.match(sceneSource, /setProperty\("--beat-opacity"/);
+  assert.match(sceneSource, /setProperty\("--beat-translate-y"/);
   assert.match(
     css,
-    /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*(?:animation:\s*none|animation-name:\s*none)[^}]*opacity:\s*1[^}]*transform:\s*none/s,
+    /\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*var\(--beat-opacity[^}]*transform:[^}]*var\(--beat-translate-y/s,
+  );
+  assert.match(
+    css,
+    /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*1[^}]*transform:\s*none/s,
   );
 });
 

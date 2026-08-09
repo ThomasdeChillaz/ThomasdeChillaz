@@ -408,14 +408,23 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     };
 
     const handleScroll = () => schedule();
+    const sizeObserver = "ResizeObserver" in window
+      ? new ResizeObserver(() => {
+        measureSection();
+        schedule(true);
+      })
+      : null;
 
     resize();
+    sizeObserver?.observe(document.documentElement);
+    if (section) sizeObserver?.observe(section);
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
     media.addEventListener("change", handleMotionPreference);
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame);
+      sizeObserver?.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", resize);
       media.removeEventListener("change", handleMotionPreference);

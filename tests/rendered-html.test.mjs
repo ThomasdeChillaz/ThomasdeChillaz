@@ -168,16 +168,10 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
   });
   assert.match(sceneSource, /function getChapterProgress/);
   assert.match(sceneSource, /addEventListener\("scroll"/);
-  assert.match(sceneSource, /drawDna\([^)]*\bprogress\b[^)]*\)/);
-  assert.match(sceneSource, /drawPlanet\([^)]*\bprogress\b[^)]*\)/);
-  assert.match(sceneSource, /drawEducation\([^)]*\bprogress\b[^)]*\)/);
-  assert.match(sceneSource, /drawSignalField\([^)]*\bprogress\b[^)]*\)/);
-  assert.match(sceneSource, /translate\([^)]*progress/);
-  assert.match(sceneSource, /scale\([^)]*progress/);
   assert.match(sceneSource, /reducedMotion\s*\?\s*[\d.]+\s*:\s*getChapterProgress/);
   assert.doesNotMatch(css, /(?:animation|view|scroll)-timeline|@keyframes\s+scroll-copy/i);
   assert.match(sceneSource, /function updateStoryBeats\([^)]*progress[^)]*reducedMotion[^)]*\)/);
-  assert.match(sceneSource, /renderScene\([^;]*displayedProgress[^;]*\)/s);
+  assert.match(sceneSource, /updateThreeScene\([^;]*displayedProgress[^;]*\)/s);
   assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
   assert.match(sceneSource, /setProperty\("--beat-opacity"/);
   assert.match(sceneSource, /setProperty\("--beat-translate-y"/);
@@ -195,6 +189,57 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
     css,
     /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*1[^}]*transform:\s*none/s,
   );
+});
+
+test("uses one procedural Three.js WebGL stage", async () => {
+  const response = await render();
+  const [html, scrollSource, threeSource, packageJson] = await Promise.all([
+    response.text(),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8").catch(() => ""),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+  const sceneSource = `${scrollSource}\n${threeSource}`;
+
+  assert.equal((html.match(/<canvas\b/g) ?? []).length, 1);
+  assert.match(html, /<canvas[^>]*aria-hidden="true"/i);
+  assert.match(packageJson, /"three"\s*:/);
+  assert.match(sceneSource, /from\s+["']three["']/);
+  assert.equal((sceneSource.match(/new\s+THREE\.WebGLRenderer\(/g) ?? []).length, 1);
+  assert.match(sceneSource, /new\s+THREE\.Scene\(/);
+  assert.match(sceneSource, /new\s+THREE\.PerspectiveCamera\(/);
+  assert.match(sceneSource, /function createDnaScene/);
+  assert.match(sceneSource, /function createPlanetScene/);
+  assert.match(sceneSource, /Math\.sin/);
+  assert.match(sceneSource, /Math\.cos/);
+  assert.match(sceneSource, /(?:TubeGeometry|InstancedMesh|CylinderGeometry)/);
+  assert.match(sceneSource, /SphereGeometry/);
+  assert.match(sceneSource, /Mesh(?:Standard|Physical)Material/);
+  assert.match(sceneSource, /(?:AmbientLight|DirectionalLight|PointLight|HemisphereLight)/);
+  assert.doesNotMatch(sceneSource, /CanvasRenderingContext2D|getContext\(["']2d["']\)|createRadialGradient/);
+  assert.doesNotMatch(sceneSource, /GLTFLoader|\.glb|\.gltf/);
+});
+
+test("shares scroll progress and safely cleans up WebGL", async () => {
+  const response = await render();
+  const [html, scrollSource, threeSource, css] = await Promise.all([
+    response.text(),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8").catch(() => ""),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  const sceneSource = `${scrollSource}\n${threeSource}`;
+
+  assert.match(sceneSource, /updateThreeScene\([^;]*displayedProgress[^;]*\)/s);
+  assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
+  assert.match(sceneSource, /geometry\.dispose\(\)/);
+  assert.match(sceneSource, /material\.dispose\(\)/);
+  assert.match(sceneSource, /renderer\.dispose\(\)/);
+  assert.match(sceneSource, /webglcontextlost/);
+  assert.match(sceneSource, /data-webgl/);
+  assert.match(html, /class="scene-fallback"[^>]*aria-hidden="true"/i);
+  assert.match(sceneSource, /try\s*\{[\s\S]*createThreeStage/);
+  assert.match(css, /\[data-webgl="fallback"\][^{]*\+\s*\.scene-fallback\s*\{[^}]*display:\s*block/s);
 });
 
 test("removes starter artifacts and preserves reduced-motion support", async () => {

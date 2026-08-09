@@ -172,10 +172,14 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
   assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
   assert.match(sceneSource, /setProperty\("--beat-opacity"/);
   assert.match(sceneSource, /setProperty\("--beat-translate-y"/);
+  assert.match(sceneSource, /setProperty\("--beat-clip-top"/);
+  assert.match(sceneSource, /setProperty\("--beat-clip-bottom"/);
+  assert.match(sceneSource, /setProperty\("--beat-opacity",\s*"1"\)/);
   assert.match(
     css,
     /\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*var\(--beat-opacity[^}]*transform:[^}]*var\(--beat-translate-y/s,
   );
+  assert.match(css, /clip-path:\s*inset\(var\(--beat-clip-top[^}]*var\(--beat-clip-bottom/s);
   assert.match(
     css,
     /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*1[^}]*transform:\s*none/s,

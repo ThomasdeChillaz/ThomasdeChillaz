@@ -79,19 +79,21 @@ test("ships an accessible scroll-driven document structure", async () => {
 
 test("removes manual motion controls and persistence", async () => {
   const response = await render();
-  const [html, source, css] = await Promise.all([
+  const [html, source, scenes, css] = await Promise.all([
     response.text(),
     readFile(new URL("../app/PortfolioExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  for (const content of [html, source, css]) {
+  for (const content of [html, source, scenes, css]) {
     assert.doesNotMatch(content, /motion-toggle|play motion|pause motion|data-motion/i);
   }
   assert.doesNotMatch(source, /localStorage|sessionStorage|MOTION_STORAGE_KEY|toggleMotion|setPaused/);
   assert.doesNotMatch(css, /data-motion="paused"/);
-  assert.doesNotMatch(`${source}\n${css}`, /\binfinite\b/);
-  assert.match(source, /timestamp - animationStart < 4800/);
+  assert.doesNotMatch(`${source}\n${scenes}\n${css}`, /\binfinite\b/);
+  assert.doesNotMatch(scenes, /performance\.now|animationStart|setInterval/);
+  assert.match(scenes, /Math\.abs\(targetProgress - displayedProgress\)/);
 });
 
 test("gives health a dedicated DNA scene and professional reveal system", async () => {

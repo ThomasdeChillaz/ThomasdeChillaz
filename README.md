@@ -6,8 +6,8 @@ with animated scientific scenes while preserving a readable semantic document.
 
 ## Highlights
 
-- DNA, planetary, and learning-network canvas chapters
-- Finite scientific motion with system-level reduced-motion support
+- Scroll-directed DNA, planetary, and learning-network camera chapters
+- Reversible, self-settling scientific motion with system-level reduced-motion support
 - Keyboard-accessible navigation and visible focus states
 - Responsive layouts for desktop, tablet, and mobile
 - Server-rendered CV content and social-sharing metadata
@@ -34,7 +34,8 @@ content, link safety, and reduced-motion fallback.
 
 ## Main files
 
-- `app/PortfolioExperience.tsx` — scroll chapters and animated scenes
+- `app/ScrollScenes.tsx` — scroll-directed scientific camera scenes
+- `app/PortfolioExperience.tsx` — semantic CV chapters and editorial content
 - `app/globals.css` — visual system, layouts, and motion fallbacks
 - `app/page.tsx` — page metadata and route entry point
 - `tests/rendered-html.test.mjs` — rendered-output checks

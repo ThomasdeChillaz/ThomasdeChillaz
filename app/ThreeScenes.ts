@@ -4,6 +4,33 @@ export type ThreeChapter = "hero" | "health" | "space" | "education" | "building
 
 type TrackPoint = readonly [progress: number, value: number];
 
+const DNA_SCALE_TRACK = [
+  [0, 2.35], [0.14, 2.35], [0.22, 1.68], [0.34, 1.68],
+  [0.44, 1.25], [0.56, 1.25], [0.66, 0.92], [1, 0.78],
+] as const;
+const DNA_X_WIDE_TRACK = [
+  [0, 3.35], [0.14, 3.35], [0.22, 2.75], [0.44, 2.25], [0.66, 1.65], [1, 1.3],
+] as const;
+const DNA_X_NARROW_TRACK = [
+  [0, 1.35], [0.14, 1.35], [0.22, 1.05], [0.44, 0.72], [0.66, 0.35], [1, 0.1],
+] as const;
+const DNA_Y_TRACK = [[0, 0.85], [0.22, 0.5], [0.44, 0.16], [0.66, -0.14], [1, -0.36]] as const;
+const DNA_ROTATION_Y_TRACK = [[0, -0.45], [0.34, 0.06], [0.66, 0.48], [1, 0.76]] as const;
+const DNA_ROTATION_Z_TRACK = [[0, -0.16], [0.44, -0.36], [1, -0.57]] as const;
+
+const PLANET_SCALE_TRACK = [
+  [0, 2.18], [0.15, 2.18], [0.25, 1.36], [0.45, 1.36],
+  [0.55, 0.98], [0.76, 0.98], [0.86, 0.76], [1, 0.76],
+] as const;
+const PLANET_X_WIDE_TRACK = [
+  [0, 3.3], [0.15, 3.3], [0.25, 2.6], [0.55, 2.05], [0.86, 1.48], [1, 1.48],
+] as const;
+const PLANET_X_NARROW_TRACK = [
+  [0, 1.35], [0.15, 1.35], [0.25, 0.95], [0.55, 0.55], [0.86, 0.18], [1, 0.18],
+] as const;
+const PLANET_Y_TRACK = [[0, 0.8], [0.25, 0.38], [0.55, 0.04], [0.86, -0.26], [1, -0.26]] as const;
+const PLANET_ROTATION_Z_TRACK = [[0, -0.04], [0.55, -0.18], [1, -0.28]] as const;
+
 type SceneBundle = Readonly<{
   scene: THREE.Scene;
   update: (progress: number, width: number, height: number, camera: THREE.PerspectiveCamera) => void;
@@ -12,7 +39,7 @@ type SceneBundle = Readonly<{
 export type ThreeStage = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
-  scenes: Record<ThreeChapter, SceneBundle>;
+  scenes: Partial<Record<ThreeChapter, SceneBundle>>;
   width: number;
   height: number;
   pixelRatio: number;
@@ -169,24 +196,17 @@ export function createDnaScene(): SceneBundle {
     scene,
     update(progress, width, height, camera) {
       const wide = width / Math.max(height, 1) > 1.15;
-      const scale = sampleTrack(progress, [
-        [0, 2.35], [0.14, 2.35], [0.22, 1.68], [0.34, 1.68],
-        [0.44, 1.25], [0.56, 1.25], [0.66, 0.92], [1, 0.78],
-      ]);
+      const scale = sampleTrack(progress, DNA_SCALE_TRACK);
       root.scale.setScalar(scale);
       root.position.set(
-        sampleTrack(progress, [
-          [0, wide ? 3.35 : 1.35], [0.14, wide ? 3.35 : 1.35],
-          [0.22, wide ? 2.75 : 1.05], [0.44, wide ? 2.25 : 0.72],
-          [0.66, wide ? 1.65 : 0.35], [1, wide ? 1.3 : 0.1],
-        ]),
-        sampleTrack(progress, [[0, 0.85], [0.22, 0.5], [0.44, 0.16], [0.66, -0.14], [1, -0.36]]),
+        sampleTrack(progress, wide ? DNA_X_WIDE_TRACK : DNA_X_NARROW_TRACK),
+        sampleTrack(progress, DNA_Y_TRACK),
         0,
       );
       root.rotation.set(
         0.18 + progress * 0.22,
-        sampleTrack(progress, [[0, -0.45], [0.34, 0.06], [0.66, 0.48], [1, 0.76]]),
-        sampleTrack(progress, [[0, -0.16], [0.44, -0.36], [1, -0.57]]),
+        sampleTrack(progress, DNA_ROTATION_Y_TRACK),
+        sampleTrack(progress, DNA_ROTATION_Z_TRACK),
       );
       camera.position.set(0, 0, wide ? 7.2 : 8.7);
       camera.lookAt(wide ? 0.5 : 0, 0, 0);
@@ -313,22 +333,15 @@ export function createPlanetScene(): SceneBundle {
     scene,
     update(progress, width, height, camera) {
       const wide = width / Math.max(height, 1) > 1.15;
-      const scale = sampleTrack(progress, [
-        [0, 2.18], [0.15, 2.18], [0.25, 1.36], [0.45, 1.36],
-        [0.55, 0.98], [0.76, 0.98], [0.86, 0.76], [1, 0.76],
-      ]);
+      const scale = sampleTrack(progress, PLANET_SCALE_TRACK);
       system.scale.setScalar(scale);
       system.position.set(
-        sampleTrack(progress, [
-          [0, wide ? 3.3 : 1.35], [0.15, wide ? 3.3 : 1.35],
-          [0.25, wide ? 2.6 : 0.95], [0.55, wide ? 2.05 : 0.55],
-          [0.86, wide ? 1.48 : 0.18], [1, wide ? 1.48 : 0.18],
-        ]),
-        sampleTrack(progress, [[0, 0.8], [0.25, 0.38], [0.55, 0.04], [0.86, -0.26], [1, -0.26]]),
+        sampleTrack(progress, wide ? PLANET_X_WIDE_TRACK : PLANET_X_NARROW_TRACK),
+        sampleTrack(progress, PLANET_Y_TRACK),
         0,
       );
       planet.rotation.set(0.08 + progress * 0.28, -0.7 + progress * 2.15, -0.06);
-      planetAssembly.rotation.z = sampleTrack(progress, [[0, -0.04], [0.55, -0.18], [1, -0.28]]);
+      planetAssembly.rotation.z = sampleTrack(progress, PLANET_ROTATION_Z_TRACK);
       const moonAngle = progress * Math.PI * 1.5 + 0.6;
       moon.position.set(Math.cos(moonAngle) * 3.2, Math.sin(moonAngle) * 1.1, Math.sin(moonAngle) * 1.7);
       camera.position.set(0, 0, wide ? 7.6 : 9.1);
@@ -424,26 +437,31 @@ export function createThreeStage(canvas: HTMLCanvasElement): ThreeStage {
     antialias: true,
     powerPreference: "high-performance",
   });
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  try {
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
-  return {
-    renderer,
-    camera: new THREE.PerspectiveCamera(34, 1, 0.1, 80),
-    scenes: {
-      hero: createSignalScene(false),
-      health: createDnaScene(),
-      space: createPlanetScene(),
-      education: createEducationScene(),
-      building: createSignalScene(false),
-      impact: createSignalScene(true),
-    },
-    width: 0,
-    height: 0,
-    pixelRatio: 0,
-  };
+    return {
+      renderer,
+      camera: new THREE.PerspectiveCamera(34, 1, 0.1, 80),
+      scenes: {},
+      width: 0,
+      height: 0,
+      pixelRatio: 0,
+    };
+  } catch (error) {
+    renderer.dispose();
+    throw error;
+  }
+}
+
+function createChapterScene(chapter: ThreeChapter) {
+  if (chapter === "health") return createDnaScene();
+  if (chapter === "space") return createPlanetScene();
+  if (chapter === "education") return createEducationScene();
+  return createSignalScene(chapter === "impact");
 }
 
 function resizeStage(stage: ThreeStage, width: number, height: number) {
@@ -467,7 +485,9 @@ export function updateThreeScene(
   height: number,
 ) {
   resizeStage(stage, width, height);
-  const bundle = stage.scenes[chapter];
+  const existingBundle = stage.scenes[chapter];
+  const bundle = existingBundle ?? createChapterScene(chapter);
+  if (!existingBundle) stage.scenes = { ...stage.scenes, [chapter]: bundle };
   bundle.update(clamp(progress), width, height, stage.camera);
   stage.renderer.render(bundle.scene, stage.camera);
 }
@@ -480,7 +500,9 @@ export function disposeThreeStage(stage: ThreeStage) {
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
 
-  Object.values(stage.scenes).forEach(({ scene }) => {
+  Object.values(stage.scenes).forEach((bundle) => {
+    if (!bundle) return;
+    const { scene } = bundle;
     scene.traverse((object) => {
       const drawable = object as THREE.Object3D & {
         geometry?: THREE.BufferGeometry;

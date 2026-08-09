@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  createThreeStage,
-  disposeThreeStage,
-  type ThreeStage,
-  updateThreeScene,
-} from "./ThreeScenes";
+import type { ThreeStage } from "./ThreeScenes";
 import { calculateChapterProgress, ease, lerp } from "./scrollMath.mjs";
 
 export type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
@@ -75,19 +70,28 @@ function updateStoryBeats(
 export function SceneCanvas({ chapter }: { chapter: Chapter }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<ThreeStage | null>(null);
+  const moduleRef = useRef<typeof import("./ThreeScenes") | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    let disposed = false;
+    let initializationId = 0;
 
     const activateFallback = () => {
       canvas.dataset.webgl = "fallback";
     };
-    const initialize = () => {
+    const initialize = async () => {
+      const activeInitialization = ++initializationId;
       try {
-        stageRef.current = createThreeStage(canvas);
+        const threeScenes = await import("./ThreeScenes");
+        if (disposed || activeInitialization !== initializationId) return;
+        moduleRef.current = threeScenes;
+        stageRef.current = threeScenes.createThreeStage(canvas);
         canvas.dataset.webgl = "ready";
+        canvas.dispatchEvent(new Event("webglready"));
       } catch {
+        if (disposed || activeInitialization !== initializationId) return;
         stageRef.current = null;
         activateFallback();
       }
@@ -96,25 +100,29 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       event.preventDefault();
       const stage = stageRef.current;
       stageRef.current = null;
-      if (stage) disposeThreeStage(stage);
+      if (stage && moduleRef.current) moduleRef.current.disposeThreeStage(stage);
       activateFallback();
     };
-    const handleContextRestored = () => initialize();
+    const handleContextRestored = () => void initialize();
 
     canvas.addEventListener("webglcontextlost", handleContextLost);
     canvas.addEventListener("webglcontextrestored", handleContextRestored);
-    initialize();
+    void initialize();
 
     return () => {
+      disposed = true;
+      initializationId += 1;
       canvas.removeEventListener("webglcontextlost", handleContextLost);
       canvas.removeEventListener("webglcontextrestored", handleContextRestored);
       const stage = stageRef.current;
       stageRef.current = null;
-      if (stage) disposeThreeStage(stage);
+      if (stage && moduleRef.current) moduleRef.current.disposeThreeStage(stage);
+      moduleRef.current = null;
     };
   }, []);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = media.matches;
     let targetProgress = reducedMotion ? 0.64 : getChapterProgress(chapter);
@@ -138,8 +146,15 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     );
     const paint = () => {
       const stage = stageRef.current;
-      if (stage) {
-        updateThreeScene(stage, chapter, displayedProgress, window.innerWidth, window.innerHeight);
+      const threeScenes = moduleRef.current;
+      if (stage && threeScenes) {
+        threeScenes.updateThreeScene(
+          stage,
+          chapter,
+          displayedProgress,
+          window.innerWidth,
+          window.innerHeight,
+        );
       }
       updateStoryBeats(storyBeats, displayedProgress, reducedMotion, storyStyleCache);
     };
@@ -169,6 +184,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       schedule(true);
     };
     const handleScroll = () => schedule();
+    const handleStageReady = () => schedule(true);
     const sizeObserver = "ResizeObserver" in window
       ? new ResizeObserver(() => {
         measureSection();
@@ -181,6 +197,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     if (section) sizeObserver?.observe(section);
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
+    canvas?.addEventListener("webglready", handleStageReady);
     media.addEventListener("change", handleMotionPreference);
 
     return () => {
@@ -188,6 +205,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       sizeObserver?.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", resize);
+      canvas?.removeEventListener("webglready", handleStageReady);
       media.removeEventListener("change", handleMotionPreference);
     };
   }, [chapter]);

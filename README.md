@@ -7,7 +7,7 @@ with animated scientific scenes while preserving a readable semantic document.
 ## Highlights
 
 - DNA, planetary, and learning-network canvas chapters
-- Motion pause control and reduced-motion support
+- Finite scientific motion with system-level reduced-motion support
 - Keyboard-accessible navigation and visible focus states
 - Responsive layouts for desktop, tablet, and mobile
 - Server-rendered CV content and social-sharing metadata
@@ -38,4 +38,3 @@ content, link safety, and reduced-motion fallback.
 - `app/globals.css` — visual system, layouts, and motion fallbacks
 - `app/page.tsx` — page metadata and route entry point
 - `tests/rendered-html.test.mjs` — rendered-output checks
-

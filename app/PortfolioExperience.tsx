@@ -1,8 +1,6 @@
 "use client";
-
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-
 type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
 const CHAPTERS: ReadonlyArray<{ id: Chapter; label: string; number: string }> = [
@@ -12,11 +10,9 @@ const CHAPTERS: ReadonlyArray<{ id: Chapter; label: string; number: string }> = 
   { id: "building", label: "Build", number: "04" },
   { id: "impact", label: "Reach", number: "05" },
 ];
-
 function isChapter(value: string | undefined): value is Chapter {
   return value === "hero" || CHAPTERS.some((chapter) => chapter.id === value);
 }
-
 const skillGroups = [
   {
     label: "Research computing",
@@ -31,12 +27,6 @@ const skillGroups = [
     skills: ["HTML / CSS / JavaScript", "SQLite", "AI agents", "User research"],
   },
 ] as const;
-
-const NETWORK_NODES = Array.from({ length: 32 }, (_, index) => ({
-  x: 0.54 + ((index * 71) % 43) / 100,
-  y: 0.08 + ((index * 113) % 85) / 100,
-}));
-
 function drawStars(context: CanvasRenderingContext2D, width: number, height: number, alpha: number) {
   for (let index = 0; index < 110; index += 1) {
     const x = ((index * 97.13) % 1000) / 1000 * width;
@@ -48,7 +38,6 @@ function drawStars(context: CanvasRenderingContext2D, width: number, height: num
     context.fill();
   }
 }
-
 function drawDna(
   context: CanvasRenderingContext2D,
   width: number,
@@ -63,7 +52,6 @@ function drawDna(
   context.save();
   context.globalAlpha = alpha;
   context.lineCap = "round";
-
   context.strokeStyle = "rgba(179,255,210,0.07)";
   context.lineWidth = 1;
   for (let ring = 0; ring < 5; ring += 1) {
@@ -71,11 +59,9 @@ function drawDna(
     context.ellipse(centerX, height * 0.5, span * (0.55 + ring * 0.2), height * (0.23 + ring * 0.07), -0.16, 0, Math.PI * 2);
     context.stroke();
   }
-
   const leftPoints: Array<[number, number]> = [];
   const rightPoints: Array<[number, number]> = [];
   const count = Math.ceil(height / step) + 16;
-
   for (let index = -8; index < count; index += 1) {
     const y = index * step + scrollShift;
     const phase = index * 0.34 + time * 0.52;
@@ -84,14 +70,12 @@ function drawDna(
     const depth = (Math.cos(phase) + 1) / 2;
     leftPoints.push([leftX, y]);
     rightPoints.push([rightX, y]);
-
     context.beginPath();
     context.strokeStyle = `rgba(231,244,226,${0.08 + depth * 0.42})`;
     context.lineWidth = 0.8 + depth * 2.4;
     context.moveTo(leftX, y);
     context.lineTo(rightX, y);
     context.stroke();
-
     for (const [x, color, direction] of [
       [leftX, "173,255,205", -1],
       [rightX, "255,142,154", 1],
@@ -116,7 +100,6 @@ function drawDna(
       context.shadowBlur = 0;
     }
   }
-
   for (const [points, color] of [
     [leftPoints, "173,255,205"],
     [rightPoints, "255,142,154"],
@@ -133,7 +116,6 @@ function drawDna(
     context.stroke();
     context.shadowBlur = 0;
   }
-
   for (let particle = 0; particle < 28; particle += 1) {
     const angle = particle * 2.399 + time * (particle % 2 ? 0.08 : -0.05);
     const radius = span * (0.55 + (particle % 7) * 0.1);
@@ -144,7 +126,6 @@ function drawDna(
     context.arc(x, y, 1.1 + (particle % 3) * 0.7, 0, Math.PI * 2);
     context.fill();
   }
-
   context.restore();
 }
 
@@ -158,17 +139,23 @@ function drawPlanet(
   context.save();
   context.globalAlpha = alpha;
   drawStars(context, width, height, alpha);
-  const x = width * 0.74;
-  const y = height * 0.48;
-  const radius = Math.min(width, height) * 0.27;
+  const x = width * 0.75;
+  const y = height * 0.5;
+  const radius = Math.min(width, height) * 0.34;
 
   context.save();
   context.translate(x, y);
   context.rotate(-0.18);
   context.strokeStyle = "rgba(255,218,147,0.34)";
-  context.lineWidth = Math.max(2, radius * 0.025);
+  context.lineWidth = Math.max(1.5, radius * 0.012);
   context.beginPath();
   context.ellipse(0, 0, radius * 1.65, radius * 0.38, 0, 0, Math.PI * 2);
+  context.stroke();
+  context.rotate(0.52);
+  context.strokeStyle = "rgba(255,218,147,0.1)";
+  context.lineWidth = 1;
+  context.beginPath();
+  context.ellipse(0, 0, radius * 1.35, radius * 0.56, 0, 0, Math.PI * 2);
   context.stroke();
   context.restore();
 
@@ -228,7 +215,7 @@ function drawEducation(
   context.globalAlpha = alpha;
   const centerX = width * 0.76;
   const centerY = height * 0.5;
-  const radius = Math.min(width, height) * 0.25;
+  const radius = Math.min(width, height) * 0.31;
 
   for (let ring = 1; ring <= 4; ring += 1) {
     context.strokeStyle = `rgba(95,190,255,${0.07 + ring * 0.025})`;
@@ -264,7 +251,7 @@ function drawEducation(
   context.restore();
 }
 
-function drawNetwork(
+function drawSignalField(
   context: CanvasRenderingContext2D,
   width: number,
   height: number,
@@ -275,23 +262,39 @@ function drawNetwork(
   context.save();
   context.globalAlpha = alpha;
   const color = warm ? "255,142,106" : "111,214,255";
-  NETWORK_NODES.forEach((node, index) => {
-    const next = NETWORK_NODES[(index * 7 + 5) % NETWORK_NODES.length];
-    const nodeX = width * node.x;
-    const nodeY = height * node.y;
-    const nextX = width * next.x;
-    const nextY = height * next.y;
-    context.strokeStyle = `rgba(${color},0.09)`;
+  const startX = width * 0.52;
+  const endX = width * 1.03;
+
+  for (let track = 0; track < 9; track += 1) {
+    const baseline = height * (0.18 + track * 0.085);
+    const amplitude = 5 + (track % 4) * 4;
+    context.strokeStyle = `rgba(${color},${0.07 + track * 0.007})`;
+    context.lineWidth = track % 3 === 0 ? 1.4 : 0.8;
     context.beginPath();
-    context.moveTo(nodeX, nodeY);
-    context.lineTo(nextX, nextY);
+    for (let x = startX; x <= endX; x += 18) {
+      const wave = Math.sin(x * 0.012 + time * 0.55 + track) * amplitude;
+      const detail = Math.sin(x * 0.035 - time * 0.24 + track * 2.1) * amplitude * 0.32;
+      const y = baseline + wave + detail;
+      if (x === startX) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    }
     context.stroke();
-    const pulse = 1 + Math.sin(time * 1.4 + index) * 0.5;
-    context.fillStyle = `rgba(${color},${0.3 + pulse * 0.18})`;
+
+    const markerProgress = (time * (0.025 + track * 0.002) + track * 0.11) % 1;
+    const markerX = startX + markerProgress * (endX - startX);
+    const markerY = baseline + Math.sin(markerX * 0.012 + time * 0.55 + track) * amplitude;
+    context.fillStyle = `rgba(${color},${0.28 + (track % 3) * 0.12})`;
     context.beginPath();
-    context.arc(nodeX, nodeY, 1.6 + pulse, 0, Math.PI * 2);
+    context.arc(markerX, markerY, 2 + (track % 2), 0, Math.PI * 2);
     context.fill();
-  });
+  }
+
+  const scanX = startX + ((time * 19) % Math.max(1, endX - startX));
+  context.strokeStyle = `rgba(${color},0.12)`;
+  context.beginPath();
+  context.moveTo(scanX, height * 0.13);
+  context.lineTo(scanX, height * 0.87);
+  context.stroke();
   context.restore();
 }
 
@@ -317,6 +320,7 @@ function SceneCanvas({ chapter }: { chapter: Chapter }) {
     let frame = 0;
     let isVisible = true;
     let lastDraw = 0;
+    const animationStart = performance.now();
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = media.matches;
 
@@ -336,11 +340,11 @@ function SceneCanvas({ chapter }: { chapter: Chapter }) {
       if (scene === "health") drawDna(context, width, height, time, alpha);
       if (scene === "space") drawPlanet(context, width, height, time, alpha);
       if (scene === "education") drawEducation(context, width, height, time, alpha);
-      if (scene === "building") drawNetwork(context, width, height, time, alpha);
-      if (scene === "impact") drawNetwork(context, width, height, time, alpha, true);
+      if (scene === "building") drawSignalField(context, width, height, time, alpha);
+      if (scene === "impact") drawSignalField(context, width, height, time, alpha, true);
       if (scene === "hero") {
         drawStars(context, width, height, alpha * 0.55);
-        drawNetwork(context, width, height, time, alpha * 0.55);
+        drawSignalField(context, width, height, time, alpha * 0.34);
       }
     };
 
@@ -352,22 +356,25 @@ function SceneCanvas({ chapter }: { chapter: Chapter }) {
 
     const animate = (timestamp: number) => {
       frame = 0;
-      if (!reducedMotion && timestamp - lastDraw < 1000 / 45) {
+      const frameInterval = 1000 / 45;
+      const elapsed = timestamp - lastDraw;
+      if (!reducedMotion && elapsed < frameInterval) {
         schedule();
         return;
       }
-      lastDraw = timestamp;
+      lastDraw = reducedMotion ? timestamp : timestamp - (elapsed % frameInterval);
       const width = window.innerWidth;
       const height = window.innerHeight;
       context.clearRect(0, 0, width, height);
-      const time = reducedMotion ? 4.25 : timestamp / 1000;
+      const settledTimestamp = Math.min(timestamp, animationStart + 4800);
+      const time = reducedMotion ? 4.25 : settledTimestamp / 1000;
       if (reducedMotion) {
         renderScene(activeRef.current, time, 1);
       } else {
         const transition = Math.min(1, (timestamp - transitionStartRef.current) / 900);
         if (transition < 1) renderScene(previousRef.current, time, 1 - transition);
         renderScene(activeRef.current, time, transition);
-        schedule();
+        if (timestamp - animationStart < 4800) schedule();
       }
     };
 
@@ -454,36 +461,49 @@ export default function PortfolioExperience() {
 
   useEffect(() => {
     const root = rootRef.current;
-    root?.setAttribute("data-enhanced", "true");
-
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible && visible.target instanceof HTMLElement) {
-          const nextChapter = visible.target.dataset.chapter;
-          if (isChapter(nextChapter)) setChapter(nextChapter);
-        }
-      },
-      { rootMargin: "-25% 0px -45%", threshold: [0, 0.2, 0.45, 0.7] },
-    );
-    sections.forEach((section) => observer.observe(section));
-
     const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.target instanceof HTMLElement) {
-            entry.target.setAttribute("data-revealed", "true");
-            revealObserver.unobserve(entry.target);
+    let observer: IntersectionObserver | null = null;
+    let revealObserver: IntersectionObserver | null = null;
+
+    try {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible && visible.target instanceof HTMLElement) {
+            const nextChapter = visible.target.dataset.chapter;
+            if (isChapter(nextChapter)) setChapter(nextChapter);
           }
-        });
-      },
-      { rootMargin: "0px 0px -9%", threshold: 0.14 },
-    );
-    revealTargets.forEach((target) => revealObserver.observe(target));
+        },
+        { rootMargin: "-25% 0px -45%", threshold: [0, 0.2, 0.45, 0.7] },
+      );
+      sections.forEach((section) => observer?.observe(section));
+
+      revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.target instanceof HTMLElement) {
+              entry.target.setAttribute("data-revealed", "true");
+              revealObserver?.unobserve(entry.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -9%", threshold: 0.14 },
+      );
+      revealTargets.forEach((target) => {
+        const bounds = target.getBoundingClientRect();
+        if (bounds.top < window.innerHeight * 0.92 && bounds.bottom > 0) {
+          target.setAttribute("data-revealed", "true");
+        } else {
+          revealObserver?.observe(target);
+        }
+      });
+      root?.setAttribute("data-enhanced", "true");
+    } catch {
+      revealTargets.forEach((target) => target.setAttribute("data-revealed", "true"));
+    }
 
     let progressFrame = 0;
     const updateProgress = () => {
@@ -503,8 +523,8 @@ export default function PortfolioExperience() {
     window.addEventListener("resize", onScroll);
     return () => {
       if (progressFrame !== 0) cancelAnimationFrame(progressFrame);
-      observer.disconnect();
-      revealObserver.disconnect();
+      observer?.disconnect();
+      revealObserver?.disconnect();
       sizeObserver?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
@@ -527,7 +547,7 @@ export default function PortfolioExperience() {
         <nav aria-label="Primary navigation">
           {CHAPTERS.map((item) => (
             <a key={item.id} href={`#${item.id}`} data-active={chapter === item.id || undefined} aria-current={chapter === item.id ? "location" : undefined}>
-              <span>{item.number}</span>{item.label}
+              <span aria-hidden="true">{item.number}</span>{item.label}
             </a>
           ))}
         </nav>
@@ -571,8 +591,9 @@ export default function PortfolioExperience() {
             className="health-visual"
             data-visual="dna-cell"
             data-scale="hero"
+            data-reveal
             role="img"
-            aria-label="Animated DNA double helix surrounded by single-cell research signals"
+            aria-label="DNA double helix connecting gene expression, cell state, and clinical signals in single-cell research"
           >
             <div className="health-annotation health-annotation-a"><span>01</span> Gene expression</div>
             <div className="health-annotation health-annotation-b"><span>02</span> Cell state</div>
@@ -771,9 +792,9 @@ export default function PortfolioExperience() {
             <a href="mailto:tdechillaz@gmail.com">Email me <span aria-hidden="true">↗</span></a>
             <a href="https://www.linkedin.com/in/thomas-de-chillaz-9382b62a0" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
           </div>
-          <footer><span>Thomas de Chillaz</span><span>AI · Biology · Space · 2026</span></footer>
         </section>
       </main>
+      <footer className="site-footer"><span>Thomas de Chillaz</span><span>AI · Biology · Space · 2026</span></footer>
     </div>
   );
 }

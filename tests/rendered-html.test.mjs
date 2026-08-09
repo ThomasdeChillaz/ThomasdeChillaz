@@ -90,6 +90,8 @@ test("removes manual motion controls and persistence", async () => {
   }
   assert.doesNotMatch(source, /localStorage|sessionStorage|MOTION_STORAGE_KEY|toggleMotion|setPaused/);
   assert.doesNotMatch(css, /data-motion="paused"/);
+  assert.doesNotMatch(`${source}\n${css}`, /\binfinite\b/);
+  assert.match(source, /timestamp - animationStart < 4800/);
 });
 
 test("gives health a dedicated DNA scene and professional reveal system", async () => {

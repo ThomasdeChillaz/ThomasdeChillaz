@@ -56,8 +56,32 @@ test("server-renders Thomas's complete CV narrative", async () => {
   assert.match(html, /Lung Cancer Subtype Classifier/);
   assert.match(html, /Next Kareer/);
   assert.match(html, /60M\+/);
-  assert.match(html, /CentraleSup(?:é|e)lec/i);
+  assert.match(html, /CentraleSupélec/i);
+  assert.match(html, /École Jeannine Manuel/);
+  assert.match(html, /résumé/);
+  assert.match(html, /Researcher · Builder · Science communicator/);
+  assert.match(html, /01 — 05/);
+  assert.match(html, /↗/);
+  assert.doesNotMatch(html, /Â|Ã|â/);
   assert.match(html, /ESSEC/);
+});
+
+test("calculates reversible normalized camera progress", async () => {
+  const { calculateChapterProgress, lerp } = await import("../app/scrollMath.mjs");
+  const sectionTop = 1000;
+  const sectionHeight = 3000;
+  const viewportHeight = 1000;
+
+  assert.equal(calculateChapterProgress(400, sectionTop, sectionHeight, viewportHeight), 0);
+  assert.equal(calculateChapterProgress(880, sectionTop, sectionHeight, viewportHeight), 0);
+  assert.equal(calculateChapterProgress(2000, sectionTop, sectionHeight, viewportHeight), 0.5);
+  assert.equal(calculateChapterProgress(3120, sectionTop, sectionHeight, viewportHeight), 1);
+  assert.equal(calculateChapterProgress(3600, sectionTop, sectionHeight, viewportHeight), 1);
+  assert.equal(lerp(2.75, 0.75, 0.5), 1.75);
+  assert.ok(
+    calculateChapterProgress(2400, sectionTop, sectionHeight, viewportHeight)
+      > calculateChapterProgress(1600, sectionTop, sectionHeight, viewportHeight),
+  );
 });
 
 test("ships an accessible scroll-driven document structure", async () => {

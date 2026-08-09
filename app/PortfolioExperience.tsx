@@ -3,27 +3,10 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-type Chapter = "hero" | "research" | "space" | "education" | "building" | "impact";
-const MOTION_STORAGE_KEY = "thomas-motion-paused";
-
-function readMotionPreference() {
-  try {
-    return window.localStorage.getItem(MOTION_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writeMotionPreference(paused: boolean) {
-  try {
-    window.localStorage.setItem(MOTION_STORAGE_KEY, String(paused));
-  } catch {
-    // The control still works for this session when storage is unavailable.
-  }
-}
+type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
 const CHAPTERS: ReadonlyArray<{ id: Chapter; label: string; number: string }> = [
-  { id: "research", label: "Cell", number: "01" },
+  { id: "health", label: "Health", number: "01" },
   { id: "space", label: "Space", number: "02" },
   { id: "education", label: "Learn", number: "03" },
   { id: "building", label: "Build", number: "04" },
@@ -73,38 +56,93 @@ function drawDna(
   time: number,
   alpha: number,
 ) {
-  const centerX = width * 0.73;
-  const span = Math.min(width * 0.28, 255);
+  const centerX = width > 900 ? width * 0.72 : width * 0.56;
+  const span = Math.min(width * 0.34, height * 0.43);
+  const step = Math.max(12, height / 62);
+  const scrollShift = (time * 11) % step;
   context.save();
   context.globalAlpha = alpha;
   context.lineCap = "round";
 
-  for (let index = -6; index < 40; index += 1) {
-    const y = (index / 39) * height + ((time * 15) % (height / 39));
-    const phase = index * 0.52 + time * 0.75;
+  context.strokeStyle = "rgba(179,255,210,0.07)";
+  context.lineWidth = 1;
+  for (let ring = 0; ring < 5; ring += 1) {
+    context.beginPath();
+    context.ellipse(centerX, height * 0.5, span * (0.55 + ring * 0.2), height * (0.23 + ring * 0.07), -0.16, 0, Math.PI * 2);
+    context.stroke();
+  }
+
+  const leftPoints: Array<[number, number]> = [];
+  const rightPoints: Array<[number, number]> = [];
+  const count = Math.ceil(height / step) + 16;
+
+  for (let index = -8; index < count; index += 1) {
+    const y = index * step + scrollShift;
+    const phase = index * 0.34 + time * 0.52;
     const leftX = centerX + Math.sin(phase) * span;
     const rightX = centerX + Math.sin(phase + Math.PI) * span;
     const depth = (Math.cos(phase) + 1) / 2;
+    leftPoints.push([leftX, y]);
+    rightPoints.push([rightX, y]);
 
     context.beginPath();
-    context.strokeStyle = `rgba(156,255,199,${0.12 + depth * 0.28})`;
-    context.lineWidth = 1 + depth * 1.5;
+    context.strokeStyle = `rgba(231,244,226,${0.08 + depth * 0.42})`;
+    context.lineWidth = 0.8 + depth * 2.4;
     context.moveTo(leftX, y);
     context.lineTo(rightX, y);
     context.stroke();
 
-    for (const [x, color] of [
-      [leftX, "129,255,190"],
-      [rightX, "255,105,168"],
+    for (const [x, color, direction] of [
+      [leftX, "173,255,205", -1],
+      [rightX, "255,142,154", 1],
     ] as const) {
-      context.shadowColor = `rgba(${color},0.8)`;
-      context.shadowBlur = 12 + depth * 12;
-      context.fillStyle = `rgba(${color},0.9)`;
+      context.shadowColor = `rgba(${color},0.62)`;
+      context.shadowBlur = index % 6 === 0 ? 22 : 8;
+      context.fillStyle = `rgba(${color},${0.5 + depth * 0.46})`;
       context.beginPath();
-      context.arc(x, y, 2.6 + depth * 2.8, 0, Math.PI * 2);
+      context.arc(x, y, index % 6 === 0 ? 5.8 + depth * 3 : 2.2 + depth * 2.4, 0, Math.PI * 2);
       context.fill();
+      if (index % 6 === 0) {
+        context.strokeStyle = `rgba(${color},0.18)`;
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(x, y, 13 + depth * 7, 0, Math.PI * 2);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(x + direction * 16, y);
+        context.lineTo(x + direction * (50 + depth * 28), y);
+        context.stroke();
+      }
       context.shadowBlur = 0;
     }
+  }
+
+  for (const [points, color] of [
+    [leftPoints, "173,255,205"],
+    [rightPoints, "255,142,154"],
+  ] as const) {
+    context.beginPath();
+    points.forEach(([x, y], index) => {
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.strokeStyle = `rgba(${color},0.74)`;
+    context.lineWidth = 3.2;
+    context.shadowColor = `rgba(${color},0.38)`;
+    context.shadowBlur = 12;
+    context.stroke();
+    context.shadowBlur = 0;
+  }
+
+  for (let particle = 0; particle < 28; particle += 1) {
+    const angle = particle * 2.399 + time * (particle % 2 ? 0.08 : -0.05);
+    const radius = span * (0.55 + (particle % 7) * 0.1);
+    const x = centerX + Math.cos(angle) * radius;
+    const y = height * 0.5 + Math.sin(angle * 1.4) * height * 0.43;
+    context.fillStyle = `rgba(205,255,224,${0.08 + (particle % 5) * 0.025})`;
+    context.beginPath();
+    context.arc(x, y, 1.1 + (particle % 3) * 0.7, 0, Math.PI * 2);
+    context.fill();
   }
 
   context.restore();
@@ -257,7 +295,7 @@ function drawNetwork(
   context.restore();
 }
 
-function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean }) {
+function SceneCanvas({ chapter }: { chapter: Chapter }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef<Chapter>(chapter);
   const previousRef = useRef<Chapter>(chapter);
@@ -279,6 +317,8 @@ function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean })
     let frame = 0;
     let isVisible = true;
     let lastDraw = 0;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reducedMotion = media.matches;
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -293,7 +333,7 @@ function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean })
     const renderScene = (scene: Chapter, time: number, alpha: number) => {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      if (scene === "research") drawDna(context, width, height, time, alpha);
+      if (scene === "health") drawDna(context, width, height, time, alpha);
       if (scene === "space") drawPlanet(context, width, height, time, alpha);
       if (scene === "education") drawEducation(context, width, height, time, alpha);
       if (scene === "building") drawNetwork(context, width, height, time, alpha);
@@ -305,14 +345,14 @@ function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean })
     };
 
     const schedule = (force = false) => {
-      if (frame === 0 && (force || (!paused && isVisible))) {
+      if (frame === 0 && (force || (!reducedMotion && isVisible))) {
         frame = requestAnimationFrame(animate);
       }
     };
 
     const animate = (timestamp: number) => {
       frame = 0;
-      if (!paused && timestamp - lastDraw < 1000 / 45) {
+      if (!reducedMotion && timestamp - lastDraw < 1000 / 45) {
         schedule();
         return;
       }
@@ -320,8 +360,8 @@ function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean })
       const width = window.innerWidth;
       const height = window.innerHeight;
       context.clearRect(0, 0, width, height);
-      const time = paused ? 4.25 : timestamp / 1000;
-      if (paused) {
+      const time = reducedMotion ? 4.25 : timestamp / 1000;
+      if (reducedMotion) {
         renderScene(activeRef.current, time, 1);
       } else {
         const transition = Math.min(1, (timestamp - transitionStartRef.current) / 900);
@@ -340,16 +380,27 @@ function SceneCanvas({ chapter, paused }: { chapter: Chapter; paused: boolean })
       if (isVisible) schedule(true);
     };
 
+    const handleMotionPreference = (event: MediaQueryListEvent) => {
+      reducedMotion = event.matches;
+      if (reducedMotion && frame !== 0) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+      schedule(true);
+    };
+
     resize();
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", handleVisibility);
+    media.addEventListener("change", handleMotionPreference);
     schedule(true);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", handleVisibility);
+      media.removeEventListener("change", handleMotionPreference);
     };
-  }, [paused, chapter]);
+  }, [chapter]);
 
   return <canvas ref={canvasRef} className="scene-canvas" aria-hidden="true" />;
 }
@@ -372,7 +423,7 @@ function ProjectCard({
   href?: string;
 }) {
   return (
-    <article className="project-card">
+    <article className="project-card" data-reveal>
       <div className="project-topline">
         <span>{index}</span>
         <span>{kicker}</span>
@@ -397,22 +448,13 @@ function ProjectCard({
 
 export default function PortfolioExperience() {
   const [chapter, setChapter] = useState<Chapter>("hero");
-  const [paused, setPaused] = useState(true);
+  const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const progressFillRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const stored = readMotionPreference();
-    const preferenceFrame = requestAnimationFrame(() => {
-      setPaused(stored === "true" || (stored === null && media.matches));
-    });
-    const handleMotionPreference = (event: MediaQueryListEvent) => {
-      if (readMotionPreference() === null) {
-        setPaused(event.matches);
-      }
-    };
-    media.addEventListener("change", handleMotionPreference);
+    const root = rootRef.current;
+    root?.setAttribute("data-enhanced", "true");
 
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
     const observer = new IntersectionObserver(
@@ -428,6 +470,20 @@ export default function PortfolioExperience() {
       { rootMargin: "-25% 0px -45%", threshold: [0, 0.2, 0.45, 0.7] },
     );
     sections.forEach((section) => observer.observe(section));
+
+    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target instanceof HTMLElement) {
+            entry.target.setAttribute("data-revealed", "true");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -9%", threshold: 0.14 },
+    );
+    revealTargets.forEach((target) => revealObserver.observe(target));
 
     let progressFrame = 0;
     const updateProgress = () => {
@@ -446,34 +502,27 @@ export default function PortfolioExperience() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
-      cancelAnimationFrame(preferenceFrame);
       if (progressFrame !== 0) cancelAnimationFrame(progressFrame);
-      media.removeEventListener("change", handleMotionPreference);
       observer.disconnect();
+      revealObserver.disconnect();
       sizeObserver?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      root?.removeAttribute("data-enhanced");
     };
   }, []);
 
-  const toggleMotion = () => {
-    const next = !paused;
-    setPaused(next);
-    writeMotionPreference(next);
-  };
-
   return (
-    <div className="portfolio" data-theme={chapter} data-motion={paused ? "paused" : "playing"}>
+    <div ref={rootRef} className="portfolio" data-theme={chapter}>
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <SceneCanvas chapter={chapter} paused={paused} />
-      <div className="ambient-grid" aria-hidden="true" />
+      <SceneCanvas chapter={chapter} />
       <div ref={progressRef} className="scroll-progress" role="progressbar" aria-label="Scroll progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
         <span ref={progressFillRef} />
       </div>
 
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="Thomas de Chillaz, back to top">
-          T<span>·</span>DC
+          Thomas de Chillaz <span>Research / Product / Science</span>
         </a>
         <nav aria-label="Primary navigation">
           {CHAPTERS.map((item) => (
@@ -482,33 +531,23 @@ export default function PortfolioExperience() {
             </a>
           ))}
         </nav>
-        <button
-          className="motion-toggle"
-          type="button"
-          onClick={toggleMotion}
-          aria-label={paused ? "Play background motion" : "Pause background motion"}
-          data-paused={paused || undefined}
-        >
-          <span className="motion-dot" aria-hidden="true" />
-          {paused ? "Play motion" : "Pause motion"}
-        </button>
       </header>
 
       <main id="main-content">
         <section className="hero chapter" id="top" data-chapter="hero" aria-labelledby="hero-title">
           <div className="hero-index" aria-hidden="true">01 — 05</div>
-          <div className="hero-copy">
-            <p className="eyebrow"><span /> AI × biology × space</p>
+          <div className="hero-copy" data-reveal>
+            <p className="eyebrow"><span /> Researcher · Builder · Science communicator</p>
             <h1 id="hero-title">Thomas<br /><em>de Chillaz</em></h1>
             <p className="hero-lede">
-              I use artificial intelligence to navigate complex systems — from the inner life of a cell to the surface of another world.
+              I build ways to see complex systems more clearly — from the inner life of a cell to the surface of another world.
             </p>
             <div className="hero-actions">
-              <a className="button button-primary" href="#research">Explore the work <span aria-hidden="true">↓</span></a>
+              <a className="button button-primary" href="#health">Explore the work <span aria-hidden="true">↓</span></a>
               <a className="button button-ghost" href="mailto:tdechillaz@gmail.com">Start a conversation</a>
             </div>
           </div>
-          <div className="portrait-wrap">
+          <div className="portrait-wrap" data-reveal>
             <div className="portrait-orbit orbit-one" aria-hidden="true" />
             <div className="portrait-orbit orbit-two" aria-hidden="true" />
             <div className="portrait-frame">
@@ -527,10 +566,22 @@ export default function PortfolioExperience() {
           <p className="scroll-cue"><span aria-hidden="true" /> Scroll to enter</p>
         </section>
 
-        <section className="chapter split-section research-section" id="research" data-chapter="research" aria-labelledby="research-title">
-          <div className="chapter-heading sticky-copy">
-            <p className="eyebrow"><span /> 01 / Computational biology</p>
-            <h2 id="research-title">Finding signal<br /><em>inside the cell.</em></h2>
+        <section className="chapter split-section health-section" id="health" data-chapter="health" aria-labelledby="health-title">
+          <figure
+            className="health-visual"
+            data-visual="dna-cell"
+            data-scale="hero"
+            role="img"
+            aria-label="Animated DNA double helix surrounded by single-cell research signals"
+          >
+            <div className="health-annotation health-annotation-a"><span>01</span> Gene expression</div>
+            <div className="health-annotation health-annotation-b"><span>02</span> Cell state</div>
+            <div className="health-annotation health-annotation-c"><span>03</span> Clinical signal</div>
+            <div className="sequence-window">ACGT · GCTA · TTAG · CGAT · ACGT · GCTA</div>
+          </figure>
+          <div className="chapter-heading sticky-copy" data-reveal>
+            <p className="eyebrow"><span /> 01 / Health & computational biology</p>
+            <h2 id="health-title">Finding signal<br /><em>inside the cell.</em></h2>
             <p className="section-intro">
               At MIT CSAIL&apos;s Computational Biology Group, I am working where AI, interfaces, and genomics meet — making complex scientific knowledge easier to explore.
             </p>
@@ -539,7 +590,7 @@ export default function PortfolioExperience() {
             </a>
           </div>
           <div className="content-rail">
-            <article className="research-card featured-card">
+            <article className="research-card featured-card" data-reveal>
               <div className="card-meta"><span>MIT CSAIL</span><span>Current focus</span></div>
               <h3>MANTIS</h3>
               <p className="card-kicker">Interactive Idea Navigator</p>
@@ -548,7 +599,7 @@ export default function PortfolioExperience() {
               </p>
               <ul className="mini-tags"><li>AI interfaces</li><li>Knowledge systems</li><li>Research tools</li></ul>
             </article>
-            <article className="research-card">
+            <article className="research-card" data-reveal>
               <div className="card-meta"><span>Single-cell</span><span>Data visualization</span></div>
               <h3>Single-cell RNA sequencing</h3>
               <p>
@@ -558,7 +609,7 @@ export default function PortfolioExperience() {
                 {Array.from({ length: 18 }, (_, index) => <span key={index} style={{ "--i": index } as React.CSSProperties} />)}
               </div>
             </article>
-            <article className="research-card">
+            <article className="research-card" data-reveal>
               <div className="card-meta"><span>LISN Laboratory</span><span>Gif-sur-Yvette</span></div>
               <h3>Multimodal survival analysis</h3>
               <p>
@@ -572,7 +623,7 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter split-section space-section" id="space" data-chapter="space" aria-labelledby="space-title">
-          <div className="chapter-heading sticky-copy">
+          <div className="chapter-heading sticky-copy" data-reveal>
             <p className="eyebrow"><span /> 02 / Astronomy</p>
             <h2 id="space-title">Teaching machines<br /><em>to read worlds.</em></h2>
             <p className="section-intro">
@@ -580,7 +631,7 @@ export default function PortfolioExperience() {
             </p>
           </div>
           <div className="content-rail space-rail">
-            <article className="orbit-card">
+            <article className="orbit-card" data-reveal>
               <p className="project-number">EXP — 01</p>
               <h3>Exoplanet Habitability Classifier</h3>
               <p>Machine learning on NASA&apos;s Kepler dataset to estimate whether planetary conditions could be compatible with life.</p>
@@ -589,7 +640,7 @@ export default function PortfolioExperience() {
               </div>
               <ul className="mini-tags"><li>Kepler</li><li>Feature engineering</li><li>Classification</li></ul>
             </article>
-            <article className="orbit-card offset-card">
+            <article className="orbit-card offset-card" data-reveal>
               <p className="project-number">LAND — 02</p>
               <h3>Landing Suitability Algorithm</h3>
               <p>A computer-vision system that combines terrain segmentation and crater detection to score safer planetary landing zones.</p>
@@ -604,12 +655,12 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter education-section" id="education" data-chapter="education" aria-labelledby="education-title">
-          <div className="chapter-heading wide-heading">
+          <div className="chapter-heading wide-heading" data-reveal>
             <p className="eyebrow"><span /> 03 / Education</p>
             <h2 id="education-title">Learning across<br /><em>the boundaries.</em></h2>
           </div>
           <div className="education-path">
-            <article className="education-stop active-stop">
+            <article className="education-stop active-stop" data-reveal>
               <p className="education-year">2025 — 2029</p>
               <div className="education-node"><span>01</span></div>
               <div className="education-card">
@@ -621,7 +672,7 @@ export default function PortfolioExperience() {
                 </ul>
               </div>
             </article>
-            <article className="education-stop">
+            <article className="education-stop" data-reveal>
               <p className="education-year">2023 — 2025</p>
               <div className="education-node"><span>02</span></div>
               <div className="education-card">
@@ -630,7 +681,7 @@ export default function PortfolioExperience() {
                 <p>Graduated with highest honors, specializing in mathematics, physics, and chemistry with expert-level mathematics.</p>
               </div>
             </article>
-            <article className="education-stop compact-stop">
+            <article className="education-stop compact-stop" data-reveal>
               <p className="education-year">2024</p>
               <div className="education-node"><span>03</span></div>
               <div className="education-card">
@@ -642,7 +693,7 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter building-section" id="building" data-chapter="building" aria-labelledby="building-title">
-          <div className="chapter-heading wide-heading">
+          <div className="chapter-heading wide-heading" data-reveal>
             <p className="eyebrow"><span /> 04 / Selected work</p>
             <h2 id="building-title">Research that<br /><em>becomes a product.</em></h2>
             <p className="section-intro">I learn fastest by building — models, agents, and tools that make a difficult process more understandable or useful.</p>
@@ -685,8 +736,8 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter impact-section" id="impact" data-chapter="impact" aria-labelledby="impact-title">
-          <div className="impact-number" aria-label="More than 60 million views"><span>60M</span><sup>+</sup></div>
-          <div className="impact-copy">
+          <div className="impact-number" data-reveal aria-label="More than 60 million views"><span>60M</span><sup>+</sup></div>
+          <div className="impact-copy" data-reveal>
             <p className="eyebrow"><span /> 05 / Science communication</p>
             <h2 id="impact-title">Curiosity,<br /><em>at scale.</em></h2>
             <p>
@@ -702,10 +753,10 @@ export default function PortfolioExperience() {
 
         <section className="skills-section" aria-labelledby="skills-title">
           <p className="eyebrow"><span /> Toolkit</p>
-          <h2 id="skills-title">How I work.</h2>
+          <h2 id="skills-title" data-reveal>How I work.</h2>
           <div className="skills-groups">
             {skillGroups.map((group) => (
-              <div key={group.label}>
+              <div key={group.label} data-reveal>
                 <h3>{group.label}</h3>
                 <ul>{group.skills.map((skill) => <li key={skill}>{skill}</li>)}</ul>
               </div>
@@ -713,7 +764,7 @@ export default function PortfolioExperience() {
           </div>
         </section>
 
-        <section className="contact-section" id="contact" aria-labelledby="contact-title">
+        <section className="contact-section" id="contact" aria-labelledby="contact-title" data-reveal>
           <p className="eyebrow"><span /> Open to ambitious ideas</p>
           <h2 id="contact-title">Let&apos;s build what<br /><em>doesn&apos;t exist yet.</em></h2>
           <div className="contact-row">

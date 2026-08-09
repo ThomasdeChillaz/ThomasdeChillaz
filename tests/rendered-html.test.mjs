@@ -157,6 +157,15 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
   const scrollCopyTags = html.match(/<[^>]+data-scroll-copy[^>]*>/g) ?? [];
   assert.ok(scrollCopyTags.length >= 6);
   scrollCopyTags.forEach((tag) => assert.doesNotMatch(tag, /data-reveal/));
+  const beatRanges = [...html.matchAll(/data-beat-range="([^"]+)"/g)].map((match) =>
+    match[1].split(",").map(Number),
+  );
+  beatRanges.forEach((range) => {
+    assert.equal(range.length, 4);
+    assert.ok(range.every(Number.isFinite));
+    assert.ok(range.every((point, index) => index === 0 || point >= range[index - 1]));
+    assert.ok(range[3] <= 1, `Beat must complete by chapter end: ${range.join(",")}`);
+  });
   assert.match(sceneSource, /function getChapterProgress/);
   assert.match(sceneSource, /addEventListener\("scroll"/);
   assert.match(sceneSource, /drawDna\([^)]*\bprogress\b[^)]*\)/);
@@ -180,6 +189,8 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
     /\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*var\(--beat-opacity[^}]*transform:[^}]*var\(--beat-translate-y/s,
   );
   assert.match(css, /clip-path:\s*inset\(var\(--beat-clip-top[^}]*var\(--beat-clip-bottom/s);
+  const responsive = extractCssBlock(css, "@media (max-width: 980px)");
+  assert.doesNotMatch(responsive, /\[data-scroll-copy\]/);
   assert.match(
     css,
     /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*1[^}]*transform:\s*none/s,

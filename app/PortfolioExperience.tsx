@@ -34,6 +34,7 @@ function ProjectCard({
   summary,
   details,
   tags,
+  beatRange,
   href,
 }: {
   index: string;
@@ -42,10 +43,11 @@ function ProjectCard({
   summary: string;
   details: string;
   tags: ReadonlyArray<string>;
+  beatRange: string;
   href?: string;
 }) {
   return (
-    <article className="project-card" data-reveal data-scroll-copy>
+    <article className="project-card" data-scene-step={`project-${index}`} data-scroll-copy data-beat-range={beatRange}>
       <div className="project-topline">
         <span>{index}</span>
         <span>{kicker}</span>
@@ -215,7 +217,7 @@ export default function PortfolioExperience() {
             <div className="health-annotation health-annotation-c"><span>03</span> Clinical signal</div>
             <div className="sequence-window">ACGT · GCTA · TTAG · CGAT · ACGT · GCTA</div>
           </figure>
-          <div className="chapter-heading sticky-copy" data-reveal>
+          <div className="chapter-heading sticky-copy" data-scene-step="health-intro" data-scroll-copy data-beat-range="-0.03,0.02,0.14,0.20">
             <p className="eyebrow"><span /> 01 / Health & computational biology</p>
             <h2 id="health-title">Finding signal<br /><em>inside the cell.</em></h2>
             <p className="section-intro">
@@ -226,7 +228,7 @@ export default function PortfolioExperience() {
             </a>
           </div>
           <div className="content-rail">
-            <article className="research-card featured-card" data-scene-step="mantis" data-scroll-copy>
+            <article className="research-card featured-card" data-scene-step="mantis" data-scroll-copy data-beat-range="0.14,0.22,0.34,0.42">
               <div className="card-meta"><span>MIT CSAIL</span><span>Current focus</span></div>
               <h3>MANTIS</h3>
               <p className="card-kicker">Interactive Idea Navigator</p>
@@ -235,7 +237,7 @@ export default function PortfolioExperience() {
               </p>
               <ul className="mini-tags"><li>AI interfaces</li><li>Knowledge systems</li><li>Research tools</li></ul>
             </article>
-            <article className="research-card" data-scene-step="single-cell" data-scroll-copy>
+            <article className="research-card" data-scene-step="single-cell" data-scroll-copy data-beat-range="0.36,0.44,0.56,0.64">
               <div className="card-meta"><span>Single-cell</span><span>Data visualization</span></div>
               <h3>Single-cell RNA sequencing</h3>
               <p>
@@ -245,7 +247,7 @@ export default function PortfolioExperience() {
                 {Array.from({ length: 18 }, (_, index) => <span key={index} style={{ "--i": index } as React.CSSProperties} />)}
               </div>
             </article>
-            <article className="research-card" data-scene-step="survival" data-scroll-copy>
+            <article className="research-card" data-scene-step="survival" data-scroll-copy data-beat-range="0.58,0.66,0.84,0.92">
               <div className="card-meta"><span>LISN Laboratory</span><span>Gif-sur-Yvette</span></div>
               <h3>Multimodal survival analysis</h3>
               <p>
@@ -259,7 +261,7 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter split-section space-section" id="space" data-chapter="space" data-scroll-scene="space" aria-labelledby="space-title">
-          <div className="chapter-heading sticky-copy" data-reveal>
+          <div className="chapter-heading sticky-copy" data-scene-step="space-intro" data-scroll-copy data-beat-range="-0.03,0.02,0.15,0.23">
             <p className="eyebrow"><span /> 02 / Astronomy</p>
             <h2 id="space-title">Teaching machines<br /><em>to read worlds.</em></h2>
             <p className="section-intro">
@@ -267,7 +269,7 @@ export default function PortfolioExperience() {
             </p>
           </div>
           <div className="content-rail space-rail">
-            <article className="orbit-card" data-scene-step="exoplanet" data-scroll-copy>
+            <article className="orbit-card" data-scene-step="exoplanet" data-scroll-copy data-beat-range="0.17,0.25,0.45,0.53">
               <p className="project-number">EXP — 01</p>
               <h3>Exoplanet Habitability Classifier</h3>
               <p>Machine learning on NASA&apos;s Kepler dataset to estimate whether planetary conditions could be compatible with life.</p>
@@ -276,14 +278,14 @@ export default function PortfolioExperience() {
               </div>
               <ul className="mini-tags"><li>Kepler</li><li>Feature engineering</li><li>Classification</li></ul>
             </article>
-            <article className="orbit-card offset-card" data-scene-step="landing" data-scroll-copy>
+            <article className="orbit-card offset-card" data-scene-step="landing" data-scroll-copy data-beat-range="0.47,0.55,0.76,0.84">
               <p className="project-number">LAND — 02</p>
               <h3>Landing Suitability Algorithm</h3>
               <p>A computer-vision system that combines terrain segmentation and crater detection to score safer planetary landing zones.</p>
               <div className="terrain-map" aria-hidden="true"><span /><span /><span /><i /></div>
               <ul className="mini-tags"><li>CNN</li><li>Segmentation</li><li>Hazard detection</li></ul>
             </article>
-            <blockquote>
+            <blockquote data-scene-step="space-quote" data-scroll-copy data-beat-range="0.78,0.86,0.96,1.03">
               <p>“What is worth doing, is worth doing well.”</p>
               <cite>— My grandfather</cite>
             </blockquote>
@@ -291,12 +293,12 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter education-section" id="education" data-chapter="education" data-scroll-scene="education" aria-labelledby="education-title">
-          <div className="chapter-heading wide-heading" data-reveal>
+          <div className="chapter-heading wide-heading" data-scene-step="education-intro" data-scroll-copy data-beat-range="-0.03,0.02,0.14,0.21">
             <p className="eyebrow"><span /> 03 / Education</p>
             <h2 id="education-title">Learning across<br /><em>the boundaries.</em></h2>
           </div>
           <div className="education-path">
-            <article className="education-stop active-stop" data-scene-step="centralesupelec-essec" data-scroll-copy>
+            <article className="education-stop active-stop" data-scene-step="centralesupelec-essec" data-scroll-copy data-beat-range="0.15,0.23,0.40,0.48">
               <p className="education-year">2025 — 2029</p>
               <div className="education-node"><span>01</span></div>
               <div className="education-card">
@@ -308,7 +310,7 @@ export default function PortfolioExperience() {
                 </ul>
               </div>
             </article>
-            <article className="education-stop" data-scene-step="baccalaureate" data-scroll-copy>
+            <article className="education-stop" data-scene-step="baccalaureate" data-scroll-copy data-beat-range="0.42,0.50,0.64,0.72">
               <p className="education-year">2023 — 2025</p>
               <div className="education-node"><span>02</span></div>
               <div className="education-card">
@@ -317,7 +319,7 @@ export default function PortfolioExperience() {
                 <p>Graduated with highest honors, specializing in mathematics, physics, and chemistry with expert-level mathematics.</p>
               </div>
             </article>
-            <article className="education-stop compact-stop" data-scene-step="stanford" data-scroll-copy>
+            <article className="education-stop compact-stop" data-scene-step="stanford" data-scroll-copy data-beat-range="0.66,0.74,0.90,0.98">
               <p className="education-year">2024</p>
               <div className="education-node"><span>03</span></div>
               <div className="education-card">
@@ -329,7 +331,7 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter building-section" id="building" data-chapter="building" data-scroll-scene="building" aria-labelledby="building-title">
-          <div className="chapter-heading wide-heading" data-reveal>
+          <div className="chapter-heading wide-heading" data-scene-step="building-intro" data-scroll-copy data-beat-range="-0.03,0.02,0.10,0.16">
             <p className="eyebrow"><span /> 04 / Selected work</p>
             <h2 id="building-title">Research that<br /><em>becomes a product.</em></h2>
             <p className="section-intro">I learn fastest by building — models, agents, and tools that make a difficult process more understandable or useful.</p>
@@ -337,6 +339,7 @@ export default function PortfolioExperience() {
           <div className="project-grid">
             <ProjectCard
               index="01"
+              beatRange="0.11,0.17,0.29,0.35"
               kicker="Medical AI"
               title="Lung Cancer Subtype Classifier"
               summary="A CT-scan classifier that improved from 85.56% to 93.02% accuracy."
@@ -345,6 +348,7 @@ export default function PortfolioExperience() {
             />
             <ProjectCard
               index="02"
+              beatRange="0.30,0.36,0.48,0.54"
               kicker="Clinical workflow"
               title="Clinical Trial AI Agent"
               summary="An automated call-center concept for faster clinical-trial patient classification."
@@ -353,6 +357,7 @@ export default function PortfolioExperience() {
             />
             <ProjectCard
               index="03"
+              beatRange="0.49,0.55,0.67,0.73"
               kicker="EdTech"
               title="Next Kareer"
               summary="An AI preparation platform for stronger, more targeted job applications."
@@ -361,6 +366,7 @@ export default function PortfolioExperience() {
             />
             <ProjectCard
               index="04"
+              beatRange="0.68,0.74,0.90,0.98"
               kicker="Voice AI"
               title="Intervue AI"
               summary="A real-time mock-interview prototype with voice interaction and résumé context."
@@ -372,8 +378,8 @@ export default function PortfolioExperience() {
         </section>
 
         <section className="chapter impact-section" id="impact" data-chapter="impact" data-scroll-scene="impact" aria-labelledby="impact-title">
-          <div className="impact-number" data-reveal aria-label="More than 60 million views"><span>60M</span><sup>+</sup></div>
-          <div className="impact-copy" data-reveal>
+          <div className="impact-number" data-scene-step="impact-number" data-scroll-copy data-beat-range="-0.03,0.02,0.42,0.54" aria-label="More than 60 million views"><span>60M</span><sup>+</sup></div>
+          <div className="impact-copy" data-scene-step="impact-story" data-scroll-copy data-beat-range="0.46,0.56,0.90,0.99">
             <p className="eyebrow"><span /> 05 / Science communication</p>
             <h2 id="impact-title">Curiosity,<br /><em>at scale.</em></h2>
             <p>

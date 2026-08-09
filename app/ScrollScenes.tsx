@@ -17,6 +17,79 @@ function getChapterProgress(chapter: Chapter) {
   );
 }
 
+type TrackPoint = readonly [progress: number, value: number];
+type BeatRange = readonly [enter: number, entered: number, exit: number, exited: number];
+
+const HEALTH_CAMERA = {
+  x: [[0, 0.88], [0.14, 0.88], [0.22, 0.81], [0.34, 0.81], [0.44, 0.75], [0.56, 0.75], [0.66, 0.69], [1, 0.67]],
+  y: [[0, 0.57], [0.22, 0.55], [0.44, 0.53], [0.66, 0.51], [1, 0.5]],
+  scale: [[0, 2.35], [0.14, 2.35], [0.22, 1.6], [0.34, 1.6], [0.44, 1.18], [0.56, 1.18], [0.66, 0.82], [1, 0.76]],
+  rotation: [[0, 0.08], [0.14, 0.08], [0.22, -0.12], [0.34, -0.12], [0.44, -0.3], [0.56, -0.3], [0.66, -0.52], [1, -0.58]],
+} as const;
+
+const SPACE_CAMERA = {
+  x: [[0, 1.01], [0.15, 1.01], [0.25, 0.82], [0.45, 0.82], [0.55, 0.72], [0.76, 0.72], [0.86, 0.66], [1, 0.66]],
+  y: [[0, 0.58], [0.25, 0.53], [0.55, 0.5], [0.86, 0.47], [1, 0.47]],
+  scale: [[0, 2.2], [0.15, 2.2], [0.25, 1.32], [0.45, 1.32], [0.55, 0.91], [0.76, 0.91], [0.86, 0.72], [1, 0.72]],
+  rotation: [[0, -0.05], [0.45, -0.05], [0.55, -0.16], [0.76, -0.16], [0.86, -0.23], [1, -0.23]],
+} as const;
+
+const EDUCATION_CAMERA = {
+  x: [[0, 0.9], [0.14, 0.9], [0.23, 0.82], [0.4, 0.82], [0.5, 0.74], [0.64, 0.74], [0.74, 0.68], [1, 0.68]],
+  y: [[0, 0.56], [0.23, 0.52], [0.5, 0.48], [0.74, 0.52], [1, 0.52]],
+  scale: [[0, 1.36], [0.14, 1.36], [0.23, 1.12], [0.4, 1.12], [0.5, 1.02], [0.64, 1.02], [0.74, 0.9], [1, 0.9]],
+  rotation: [[0, -0.14], [0.23, -0.08], [0.5, 0], [0.74, 0.06], [1, 0.06]],
+} as const;
+
+const SIGNAL_CAMERA = {
+  x: [[0, 0.16], [0.1, 0.16], [0.17, 0.08], [0.29, 0.08], [0.36, 0.02], [0.48, 0.02], [0.55, -0.04], [0.67, -0.04], [0.74, -0.1], [1, -0.1]],
+  y: [[0, 0.06], [0.36, 0.02], [0.74, -0.02], [1, -0.02]],
+  scale: [[0, 1.3], [0.1, 1.3], [0.17, 1.14], [0.29, 1.14], [0.36, 1.04], [0.48, 1.04], [0.55, 0.96], [0.67, 0.96], [0.74, 0.88], [1, 0.88]],
+} as const;
+
+function sampleTrack(progress: number, points: ReadonlyArray<TrackPoint>) {
+  if (progress <= points[0][0]) return points[0][1];
+  for (let index = 1; index < points.length; index += 1) {
+    const [end, endValue] = points[index];
+    const [start, startValue] = points[index - 1];
+    if (progress <= end) {
+      const localProgress = ease((progress - start) / Math.max(0.001, end - start));
+      return lerp(startValue, endValue, localProgress);
+    }
+  }
+  return points[points.length - 1][1];
+}
+
+function parseBeatRange(value: string | undefined): BeatRange {
+  const parsed = value?.split(",").map(Number) ?? [];
+  if (parsed.length === 4 && parsed.every(Number.isFinite)) {
+    return [parsed[0], parsed[1], parsed[2], parsed[3]];
+  }
+  return [0, 0.1, 0.9, 1];
+}
+
+function updateStoryBeats(
+  section: HTMLElement | null,
+  progress: number,
+  reducedMotion: boolean,
+) {
+  if (!section) return;
+  const beats = section.querySelectorAll<HTMLElement>("[data-scroll-copy]");
+  beats.forEach((beat) => {
+    const [enter, entered, exit, exited] = parseBeatRange(beat.dataset.beatRange);
+    const fadeIn = reducedMotion ? 1 : ease((progress - enter) / Math.max(0.001, entered - enter));
+    const fadeOut = reducedMotion ? 1 : 1 - ease((progress - exit) / Math.max(0.001, exited - exit));
+    const opacity = Math.min(fadeIn, fadeOut);
+    const translateY = reducedMotion
+      ? 0
+      : progress < entered
+        ? lerp(28, 0, fadeIn)
+        : lerp(0, -20, 1 - fadeOut);
+    beat.style.setProperty("--beat-opacity", opacity.toFixed(3));
+    beat.style.setProperty("--beat-translate-y", `${translateY.toFixed(2)}px`);
+  });
+}
+
 function drawStars(
   context: CanvasRenderingContext2D,
   width: number,
@@ -73,7 +146,6 @@ function drawDna(
   progress: number,
   alpha: number,
 ) {
-  const cameraProgress = ease(progress);
   const unit = Math.min(width, height);
   const radius = unit * 0.2;
   const length = unit * 0.86;
@@ -81,11 +153,11 @@ function drawDna(
   context.save();
   context.globalAlpha = alpha;
   context.translate(
-    width * lerp(0.88, 0.69, progress),
-    height * lerp(0.57, 0.52, cameraProgress),
+    width * sampleTrack(progress, HEALTH_CAMERA.x),
+    height * sampleTrack(progress, HEALTH_CAMERA.y),
   );
-  context.scale(lerp(2.75, 0.74, progress), lerp(2.75, 0.74, progress));
-  context.rotate(lerp(0.08, -0.64, cameraProgress));
+  context.scale(sampleTrack(progress, HEALTH_CAMERA.scale), sampleTrack(progress, HEALTH_CAMERA.scale));
+  context.rotate(sampleTrack(progress, HEALTH_CAMERA.rotation));
 
   for (let index = 0; index <= 34; index += 1) {
     const ratio = index / 34;
@@ -142,11 +214,11 @@ function drawPlanet(
   context.save();
   context.globalAlpha = alpha;
   context.translate(
-    width * lerp(1.02, 0.72, progress),
-    height * lerp(0.58, 0.5, cameraProgress),
+    width * sampleTrack(progress, SPACE_CAMERA.x),
+    height * sampleTrack(progress, SPACE_CAMERA.y),
   );
-  context.scale(lerp(2.38, 0.78, progress), lerp(2.38, 0.78, progress));
-  context.rotate(lerp(-0.05, -0.23, cameraProgress));
+  context.scale(sampleTrack(progress, SPACE_CAMERA.scale), sampleTrack(progress, SPACE_CAMERA.scale));
+  context.rotate(sampleTrack(progress, SPACE_CAMERA.rotation));
 
   context.strokeStyle = "rgba(255,211,142,0.4)";
   context.lineWidth = 3;
@@ -224,11 +296,11 @@ function drawEducation(
   context.save();
   context.globalAlpha = alpha;
   context.translate(
-    width * lerp(0.92, 0.72, progress),
-    height * lerp(0.58, 0.5, cameraProgress),
+    width * sampleTrack(progress, EDUCATION_CAMERA.x),
+    height * sampleTrack(progress, EDUCATION_CAMERA.y),
   );
-  context.scale(lerp(2.05, 0.84, progress), lerp(2.05, 0.84, progress));
-  context.rotate(lerp(-0.28, 0.08, cameraProgress));
+  context.scale(sampleTrack(progress, EDUCATION_CAMERA.scale), sampleTrack(progress, EDUCATION_CAMERA.scale));
+  context.rotate(sampleTrack(progress, EDUCATION_CAMERA.rotation));
 
   for (let ring = 1; ring <= 4; ring += 1) {
     context.strokeStyle = `rgba(91,210,255,${0.06 + ring * 0.025})`;
@@ -290,8 +362,11 @@ function drawSignalField(
 
   context.save();
   context.globalAlpha = alpha;
-  context.translate(width * lerp(0.2, 0, progress), height * lerp(0.08, 0, cameraProgress));
-  context.scale(lerp(1.62, 0.94, progress), lerp(1.62, 0.94, progress));
+  context.translate(
+    width * sampleTrack(progress, SIGNAL_CAMERA.x),
+    height * sampleTrack(progress, SIGNAL_CAMERA.y),
+  );
+  context.scale(sampleTrack(progress, SIGNAL_CAMERA.scale), sampleTrack(progress, SIGNAL_CAMERA.scale));
   const startX = width * 0.49;
   const endX = width * 1.06;
 
@@ -371,6 +446,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     const paint = () => {
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       renderScene(context, chapter, window.innerWidth, window.innerHeight, displayedProgress);
+      updateStoryBeats(section, displayedProgress, reducedMotion);
     };
 
     const animate = () => {

@@ -79,14 +79,15 @@ function updateStoryBeats(
     const [enter, entered, exit, exited] = parseBeatRange(beat.dataset.beatRange);
     const fadeIn = reducedMotion ? 1 : ease((progress - enter) / Math.max(0.001, entered - enter));
     const fadeOut = reducedMotion ? 1 : 1 - ease((progress - exit) / Math.max(0.001, exited - exit));
-    const opacity = Math.min(fadeIn, fadeOut);
     const translateY = reducedMotion
       ? 0
       : progress < entered
         ? lerp(28, 0, fadeIn)
         : lerp(0, -20, 1 - fadeOut);
-    beat.style.setProperty("--beat-opacity", opacity.toFixed(3));
+    beat.style.setProperty("--beat-opacity", "1");
     beat.style.setProperty("--beat-translate-y", `${translateY.toFixed(2)}px`);
+    beat.style.setProperty("--beat-clip-top", `${((1 - fadeIn) * 100).toFixed(2)}%`);
+    beat.style.setProperty("--beat-clip-bottom", `${((1 - fadeOut) * 100).toFixed(2)}%`);
   });
 }
 

@@ -189,11 +189,13 @@ button { font: inherit; }
 [data-scroll-copy] {
   opacity: var(--beat-opacity, 1);
   transform: translate3d(0, var(--beat-translate-y, 0px), 0);
-  will-change: opacity, transform;
+  clip-path: inset(var(--beat-clip-top, 0%) 0 var(--beat-clip-bottom, 0%) 0);
+  will-change: transform, clip-path;
 }
 [data-scroll-copy]:focus-within {
   opacity: 1 !important;
   transform: none !important;
+  clip-path: none !important;
 }
 
 main { position: relative; z-index: 2; }
@@ -461,7 +463,7 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
   .project-card { min-height: 30rem; }
   .impact-section { grid-template-columns: 1fr; min-height: 100vh; padding: 8rem 1.5rem; }
   .impact-number, .impact-copy { position: relative; min-height: auto; }
-  [data-scroll-copy] { opacity: 1 !important; transform: none !important; will-change: auto; }
+  [data-scroll-copy] { opacity: 1 !important; transform: none !important; clip-path: none !important; will-change: auto; }
   .impact-number span { font-size: clamp(8rem, 38vw, 18rem); }
   .site-footer { padding-bottom: 6.5rem; }
 }
@@ -518,6 +520,7 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
   [data-scroll-copy] {
     opacity: 1;
     transform: none;
+    clip-path: none;
     will-change: auto;
   }
 }

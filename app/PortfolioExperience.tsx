@@ -53,7 +53,7 @@ function ProjectCard({
       <h3>{title}</h3>
       <p>{summary}</p>
       <details>
-        <summary>Open project notes <span aria-hidden="true">â†—</span></summary>
+        <summary>Open project notes <span aria-hidden="true">↗</span></summary>
         <p>{details}</p>
         {href ? (
           <a className="text-link" href={href} target="_blank" rel="noreferrer">
@@ -170,15 +170,15 @@ export default function PortfolioExperience() {
 
       <main id="main-content">
         <section className="hero chapter" id="top" data-chapter="hero" aria-labelledby="hero-title">
-          <div className="hero-index" aria-hidden="true">01 â€” 05</div>
+          <div className="hero-index" aria-hidden="true">01 — 05</div>
           <div className="hero-copy" data-reveal>
-            <p className="eyebrow"><span /> Researcher Â· Builder Â· Science communicator</p>
+            <p className="eyebrow"><span /> Researcher · Builder · Science communicator</p>
             <h1 id="hero-title">Thomas<br /><em>de Chillaz</em></h1>
             <p className="hero-lede">
-              I build ways to see complex systems more clearly â€” from the inner life of a cell to the surface of another world.
+              I build ways to see complex systems more clearly — from the inner life of a cell to the surface of another world.
             </p>
             <div className="hero-actions">
-              <a className="button button-primary" href="#health">Explore the work <span aria-hidden="true">â†“</span></a>
+              <a className="button button-primary" href="#health">Explore the work <span aria-hidden="true">↓</span></a>
               <a className="button button-ghost" href="mailto:tdechillaz@gmail.com">Start a conversation</a>
             </div>
           </div>
@@ -213,16 +213,16 @@ export default function PortfolioExperience() {
             <div className="health-annotation health-annotation-a"><span>01</span> Gene expression</div>
             <div className="health-annotation health-annotation-b"><span>02</span> Cell state</div>
             <div className="health-annotation health-annotation-c"><span>03</span> Clinical signal</div>
-            <div className="sequence-window">ACGT Â· GCTA Â· TTAG Â· CGAT Â· ACGT Â· GCTA</div>
+            <div className="sequence-window">ACGT · GCTA · TTAG · CGAT · ACGT · GCTA</div>
           </figure>
           <div className="chapter-heading sticky-copy" data-reveal>
             <p className="eyebrow"><span /> 01 / Health & computational biology</p>
             <h2 id="health-title">Finding signal<br /><em>inside the cell.</em></h2>
             <p className="section-intro">
-              At MIT CSAIL&apos;s Computational Biology Group, I am working where AI, interfaces, and genomics meet â€” making complex scientific knowledge easier to explore.
+              At MIT CSAIL&apos;s Computational Biology Group, I am working where AI, interfaces, and genomics meet — making complex scientific knowledge easier to explore.
             </p>
             <a className="source-link" href="https://compbio.mit.edu/" target="_blank" rel="noreferrer">
-              MIT Computational Biology Group <span aria-hidden="true">â†—</span>
+              MIT Computational Biology Group <span aria-hidden="true">↗</span>
             </a>
           </div>
           <div className="content-rail">
@@ -268,7 +268,7 @@ export default function PortfolioExperience() {
           </div>
           <div className="content-rail space-rail">
             <article className="orbit-card" data-scene-step="exoplanet" data-scroll-copy>
-              <p className="project-number">EXP â€” 01</p>
+              <p className="project-number">EXP — 01</p>
               <h3>Exoplanet Habitability Classifier</h3>
               <p>Machine learning on NASA&apos;s Kepler dataset to estimate whether planetary conditions could be compatible with life.</p>
               <div className="signal-bars" aria-hidden="true">
@@ -277,15 +277,15 @@ export default function PortfolioExperience() {
               <ul className="mini-tags"><li>Kepler</li><li>Feature engineering</li><li>Classification</li></ul>
             </article>
             <article className="orbit-card offset-card" data-scene-step="landing" data-scroll-copy>
-              <p className="project-number">LAND â€” 02</p>
+              <p className="project-number">LAND — 02</p>
               <h3>Landing Suitability Algorithm</h3>
               <p>A computer-vision system that combines terrain segmentation and crater detection to score safer planetary landing zones.</p>
               <div className="terrain-map" aria-hidden="true"><span /><span /><span /><i /></div>
               <ul className="mini-tags"><li>CNN</li><li>Segmentation</li><li>Hazard detection</li></ul>
             </article>
             <blockquote>
-              <p>â€œWhat is worth doing, is worth doing well.â€</p>
-              <cite>â€” My grandfather</cite>
+              <p>“What is worth doing, is worth doing well.”</p>
+              <cite>— My grandfather</cite>
             </blockquote>
           </div>
         </section>
@@ -297,10 +297,10 @@ export default function PortfolioExperience() {
           </div>
           <div className="education-path">
             <article className="education-stop active-stop" data-scene-step="centralesupelec-essec" data-scroll-copy>
-              <p className="education-year">2025 â€” 2029</p>
+              <p className="education-year">2025 — 2029</p>
               <div className="education-node"><span>01</span></div>
               <div className="education-card">
-                <p className="school-label">CentraleSupÃ©lec Ã— ESSEC</p>
+                <p className="school-label">CentraleSupélec × ESSEC</p>
                 <h3>Bachelor of AI, Data & Management Sciences</h3>
                 <p>An interdisciplinary program connecting rigorous technical work with strategy, organizations, and real-world decision-making.</p>
                 <ul className="course-grid">
@@ -309,10 +309,10 @@ export default function PortfolioExperience() {
               </div>
             </article>
             <article className="education-stop" data-scene-step="baccalaureate" data-scroll-copy>
-              <p className="education-year">2023 â€” 2025</p>
+              <p className="education-year">2023 — 2025</p>
               <div className="education-node"><span>02</span></div>
               <div className="education-card">
-                <p className="school-label">Ã‰cole Jeannine Manuel</p>
+                <p className="school-label">École Jeannine Manuel</p>
                 <h3>French International Baccalaureate</h3>
                 <p>Graduated with highest honors, specializing in mathematics, physics, and chemistry with expert-level mathematics.</p>
               </div>
@@ -332,7 +332,7 @@ export default function PortfolioExperience() {
           <div className="chapter-heading wide-heading" data-reveal>
             <p className="eyebrow"><span /> 04 / Selected work</p>
             <h2 id="building-title">Research that<br /><em>becomes a product.</em></h2>
-            <p className="section-intro">I learn fastest by building â€” models, agents, and tools that make a difficult process more understandable or useful.</p>
+            <p className="section-intro">I learn fastest by building — models, agents, and tools that make a difficult process more understandable or useful.</p>
           </div>
           <div className="project-grid">
             <ProjectCard
@@ -356,15 +356,15 @@ export default function PortfolioExperience() {
               kicker="EdTech"
               title="Next Kareer"
               summary="An AI preparation platform for stronger, more targeted job applications."
-              details="Developed in the CentraleSupÃ©lec accelerator loop, the product brings together interview practice, rÃ©sumÃ© feedback, and application tracking around the candidate journey."
+              details="Developed in the CentraleSupélec accelerator loop, the product brings together interview practice, résumé feedback, and application tracking around the candidate journey."
               tags={["Product", "AI interviewer", "Accelerator"]}
             />
             <ProjectCard
               index="04"
               kicker="Voice AI"
               title="Intervue AI"
-              summary="A real-time mock-interview prototype with voice interaction and rÃ©sumÃ© context."
-              details="Built as a working demonstration with speech-to-text, text-to-speech, rÃ©sumÃ© parsing, and rapid response generation."
+              summary="A real-time mock-interview prototype with voice interaction and résumé context."
+              details="Built as a working demonstration with speech-to-text, text-to-speech, résumé parsing, and rapid response generation."
               tags={["Flask", "Gemini", "ElevenLabs"]}
               href="https://devpost.com/software/intervue-oexijt"
             />
@@ -404,12 +404,12 @@ export default function PortfolioExperience() {
           <p className="eyebrow"><span /> Open to ambitious ideas</p>
           <h2 id="contact-title">Let&apos;s build what<br /><em>doesn&apos;t exist yet.</em></h2>
           <div className="contact-row">
-            <a href="mailto:tdechillaz@gmail.com">Email me <span aria-hidden="true">â†—</span></a>
-            <a href="https://www.linkedin.com/in/thomas-de-chillaz-9382b62a0" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">â†—</span></a>
+            <a href="mailto:tdechillaz@gmail.com">Email me <span aria-hidden="true">↗</span></a>
+            <a href="https://www.linkedin.com/in/thomas-de-chillaz-9382b62a0" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
           </div>
         </section>
       </main>
-      <footer className="site-footer"><span>Thomas de Chillaz</span><span>AI Â· Biology Â· Space Â· 2026</span></footer>
+      <footer className="site-footer"><span>Thomas de Chillaz</span><span>AI · Biology · Space · 2026</span></footer>
     </div>
   );
 }

@@ -1,24 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { calculateChapterProgress, ease, lerp } from "./scrollMath.mjs";
 
 export type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
-
-const clamp = (value: number, minimum = 0, maximum = 1) =>
-  Math.min(maximum, Math.max(minimum, value));
-const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
-const ease = (progress: number) => {
-  const value = clamp(progress);
-  return value * value * (3 - 2 * value);
-};
 
 function getChapterProgress(chapter: Chapter) {
   const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
   if (!section) return 0;
 
-  const start = section.offsetTop - window.innerHeight * 0.12;
-  const distance = Math.max(1, section.offsetHeight - window.innerHeight * 0.76);
-  return clamp((window.scrollY - start) / distance);
+  return calculateChapterProgress(
+    window.scrollY,
+    section.offsetTop,
+    section.offsetHeight,
+    window.innerHeight,
+  );
 }
 
 function drawStars(
@@ -356,6 +352,21 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     let displayedProgress = targetProgress;
     let frame = 0;
     let dpr = 1;
+    const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
+    let sectionTop = section?.offsetTop ?? 0;
+    let sectionHeight = section?.offsetHeight ?? window.innerHeight;
+
+    const measureSection = () => {
+      sectionTop = section?.offsetTop ?? 0;
+      sectionHeight = section?.offsetHeight ?? window.innerHeight;
+    };
+
+    const readProgress = () => calculateChapterProgress(
+      window.scrollY,
+      sectionTop,
+      sectionHeight,
+      window.innerHeight,
+    );
 
     const paint = () => {
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -364,6 +375,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
 
     const animate = () => {
       frame = 0;
+      targetProgress = reducedMotion ? 0.64 : readProgress();
       const delta = targetProgress - displayedProgress;
       displayedProgress = reducedMotion || Math.abs(delta) < 0.001
         ? targetProgress
@@ -374,9 +386,9 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       }
     };
 
-    const schedule = () => {
-      targetProgress = reducedMotion ? 0.64 : getChapterProgress(chapter);
-      if (frame === 0) frame = requestAnimationFrame(animate);
+    const schedule = (force = false) => {
+      if ((!force && reducedMotion) || frame !== 0) return;
+      frame = requestAnimationFrame(animate);
     };
 
     const resize = () => {
@@ -385,23 +397,26 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       canvas.height = Math.round(window.innerHeight * dpr);
       canvas.style.width = `${window.innerWidth}px`;
       canvas.style.height = `${window.innerHeight}px`;
-      schedule();
+      measureSection();
+      schedule(true);
     };
 
     const handleMotionPreference = (event: MediaQueryListEvent) => {
       reducedMotion = event.matches;
-      displayedProgress = reducedMotion ? 0.64 : getChapterProgress(chapter);
-      schedule();
+      displayedProgress = reducedMotion ? 0.64 : readProgress();
+      schedule(true);
     };
 
+    const handleScroll = () => schedule();
+
     resize();
-    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
     media.addEventListener("change", handleMotionPreference);
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", resize);
       media.removeEventListener("change", handleMotionPreference);
     };

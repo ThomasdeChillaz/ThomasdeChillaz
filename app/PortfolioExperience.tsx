@@ -27,6 +27,8 @@ const skillGroups = [
     skills: ["HTML / CSS / JavaScript", "SQLite", "AI agents", "User research"],
   },
 ] as const;
+type BeatRangeValue = `${number},${number},${number},${number}`;
+
 function ProjectCard({
   index,
   title,
@@ -43,7 +45,7 @@ function ProjectCard({
   summary: string;
   details: string;
   tags: ReadonlyArray<string>;
-  beatRange: string;
+  beatRange: BeatRangeValue;
   href?: string;
 }) {
   return (

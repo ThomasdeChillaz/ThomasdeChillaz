@@ -19,6 +19,7 @@ function getChapterProgress(chapter: Chapter) {
 
 type TrackPoint = readonly [progress: number, value: number];
 type BeatRange = readonly [enter: number, entered: number, exit: number, exited: number];
+type StoryBeat = Readonly<{ element: HTMLElement; range: BeatRange }>;
 
 const HEALTH_CAMERA = {
   x: [[0, 0.88], [0.14, 0.88], [0.22, 0.81], [0.34, 0.81], [0.44, 0.75], [0.56, 0.75], [0.66, 0.69], [1, 0.67]],
@@ -62,21 +63,29 @@ function sampleTrack(progress: number, points: ReadonlyArray<TrackPoint>) {
 
 function parseBeatRange(value: string | undefined): BeatRange {
   const parsed = value?.split(",").map(Number) ?? [];
-  if (parsed.length === 4 && parsed.every(Number.isFinite)) {
+  const isMonotonic = parsed.every((point, index) => index === 0 || point >= parsed[index - 1]);
+  if (parsed.length === 4 && parsed.every(Number.isFinite) && isMonotonic) {
     return [parsed[0], parsed[1], parsed[2], parsed[3]];
   }
   return [0, 0.1, 0.9, 1];
 }
 
+function createStoryBeats(section: HTMLElement | null): ReadonlyArray<StoryBeat> {
+  if (!section) return [];
+  return Array.from(section.querySelectorAll<HTMLElement>("[data-scroll-copy]"), (element) => ({
+    element,
+    range: parseBeatRange(element.dataset.beatRange),
+  }));
+}
+
 function updateStoryBeats(
-  section: HTMLElement | null,
+  beats: ReadonlyArray<StoryBeat>,
   progress: number,
   reducedMotion: boolean,
+  styleCache: WeakMap<HTMLElement, string>,
 ) {
-  if (!section) return;
-  const beats = section.querySelectorAll<HTMLElement>("[data-scroll-copy]");
   beats.forEach((beat) => {
-    const [enter, entered, exit, exited] = parseBeatRange(beat.dataset.beatRange);
+    const [enter, entered, exit, exited] = beat.range;
     const fadeIn = reducedMotion ? 1 : ease((progress - enter) / Math.max(0.001, entered - enter));
     const fadeOut = reducedMotion ? 1 : 1 - ease((progress - exit) / Math.max(0.001, exited - exit));
     const translateY = reducedMotion
@@ -84,10 +93,16 @@ function updateStoryBeats(
       : progress < entered
         ? lerp(28, 0, fadeIn)
         : lerp(0, -20, 1 - fadeOut);
-    beat.style.setProperty("--beat-opacity", "1");
-    beat.style.setProperty("--beat-translate-y", `${translateY.toFixed(2)}px`);
-    beat.style.setProperty("--beat-clip-top", `${((1 - fadeIn) * 100).toFixed(2)}%`);
-    beat.style.setProperty("--beat-clip-bottom", `${((1 - fadeOut) * 100).toFixed(2)}%`);
+    const translate = `${translateY.toFixed(2)}px`;
+    const clipTop = `${((1 - fadeIn) * 100).toFixed(2)}%`;
+    const clipBottom = `${((1 - fadeOut) * 100).toFixed(2)}%`;
+    const styleKey = `${translate}|${clipTop}|${clipBottom}`;
+    if (styleCache.get(beat.element) === styleKey) return;
+    beat.element.style.setProperty("--beat-opacity", "1");
+    beat.element.style.setProperty("--beat-translate-y", translate);
+    beat.element.style.setProperty("--beat-clip-top", clipTop);
+    beat.element.style.setProperty("--beat-clip-bottom", clipBottom);
+    styleCache.set(beat.element, styleKey);
   });
 }
 
@@ -429,6 +444,8 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     let frame = 0;
     let dpr = 1;
     const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
+    const storyBeats = createStoryBeats(section);
+    const storyStyleCache = new WeakMap<HTMLElement, string>();
     let sectionTop = section?.offsetTop ?? 0;
     let sectionHeight = section?.offsetHeight ?? window.innerHeight;
 
@@ -447,7 +464,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     const paint = () => {
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       renderScene(context, chapter, window.innerWidth, window.innerHeight, displayedProgress);
-      updateStoryBeats(section, displayedProgress, reducedMotion);
+      updateStoryBeats(storyBeats, displayedProgress, reducedMotion, storyStyleCache);
     };
 
     const animate = () => {

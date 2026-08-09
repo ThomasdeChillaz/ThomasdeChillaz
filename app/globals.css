@@ -459,11 +459,10 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
   .education-section, .building-section, .skills-section, .contact-section { min-height: auto; padding: 8rem 1.5rem; }
   .building-section { display: block; }
   .building-section > .chapter-heading { position: relative; min-height: auto; }
-  .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2rem; max-width: none; margin-top: 5rem; padding: 0; }
-  .project-card { min-height: 30rem; }
+  .project-grid { display: grid; grid-template-columns: 1fr; gap: 0; max-width: none; margin-top: 5rem; padding: 0; }
+  .project-card { min-height: 72vh; }
   .impact-section { grid-template-columns: 1fr; min-height: 100vh; padding: 8rem 1.5rem; }
   .impact-number, .impact-copy { position: relative; min-height: auto; }
-  [data-scroll-copy] { opacity: 1 !important; transform: none !important; clip-path: none !important; will-change: auto; }
   .impact-number span { font-size: clamp(8rem, 38vw, 18rem); }
   .site-footer { padding-bottom: 6.5rem; }
 }

@@ -287,7 +287,7 @@ export default function PortfolioExperience() {
               <div className="terrain-map" aria-hidden="true"><span /><span /><span /><i /></div>
               <ul className="mini-tags"><li>CNN</li><li>Segmentation</li><li>Hazard detection</li></ul>
             </article>
-            <blockquote data-scene-step="space-quote" data-scroll-copy data-beat-range="0.78,0.86,0.96,1.03">
+            <blockquote data-scene-step="space-quote" data-scroll-copy data-beat-range="0.78,0.86,0.96,1.00">
               <p>“What is worth doing, is worth doing well.”</p>
               <cite>— My grandfather</cite>
             </blockquote>

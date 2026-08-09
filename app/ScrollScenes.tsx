@@ -148,13 +148,19 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       const stage = stageRef.current;
       const threeScenes = moduleRef.current;
       if (stage && threeScenes) {
-        threeScenes.updateThreeScene(
-          stage,
-          chapter,
-          displayedProgress,
-          window.innerWidth,
-          window.innerHeight,
-        );
+        try {
+          threeScenes.updateThreeScene(
+            stage,
+            chapter,
+            displayedProgress,
+            window.innerWidth,
+            window.innerHeight,
+          );
+        } catch {
+          stageRef.current = null;
+          if (canvas) canvas.dataset.webgl = "fallback";
+          threeScenes.disposeThreeStage(stage);
+        }
       }
       updateStoryBeats(storyBeats, displayedProgress, reducedMotion, storyStyleCache);
     };

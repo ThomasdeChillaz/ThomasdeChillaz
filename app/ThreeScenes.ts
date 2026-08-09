@@ -36,6 +36,22 @@ type SceneBundle = Readonly<{
   update: (progress: number, width: number, height: number, camera: THREE.PerspectiveCamera) => void;
 }>;
 
+type Disposable = { dispose: () => void };
+
+class ResourceTracker {
+  private readonly resources = new Set<Disposable>();
+
+  track<T extends Disposable>(resource: T) {
+    this.resources.add(resource);
+    return resource;
+  }
+
+  dispose() {
+    this.resources.forEach((resource) => resource.dispose());
+    this.resources.clear();
+  }
+}
+
 export type ThreeStage = {
   renderer: THREE.WebGLRenderer;
   camera: THREE.PerspectiveCamera;
@@ -77,7 +93,13 @@ function seededValue(index: number, salt: number) {
   return value - Math.floor(value);
 }
 
-function addStars(scene: THREE.Scene, color: number, count: number, spread = 18) {
+function addStars(
+  scene: THREE.Scene,
+  resources: ResourceTracker,
+  color: number,
+  count: number,
+  spread = 18,
+) {
   const positions = new Float32Array(count * 3);
   for (let index = 0; index < count; index += 1) {
     positions[index * 3] = (seededValue(index, 1) - 0.5) * spread;
@@ -85,16 +107,36 @@ function addStars(scene: THREE.Scene, color: number, count: number, spread = 18)
     positions[index * 3 + 2] = -2 - seededValue(index, 3) * spread;
   }
 
-  const geometry = new THREE.BufferGeometry();
+  const geometry = resources.track(new THREE.BufferGeometry());
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const material = new THREE.PointsMaterial({
+  const material = resources.track(new THREE.PointsMaterial({
     color,
     size: 0.035,
     transparent: true,
     opacity: 0.58,
     depthWrite: false,
-  });
+  }));
   scene.add(new THREE.Points(geometry, material));
+}
+
+function disposeScene(scene: THREE.Scene) {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+
+  scene.traverse((object) => {
+    const drawable = object as THREE.Object3D & {
+      geometry?: THREE.BufferGeometry;
+      material?: THREE.Material | THREE.Material[];
+    };
+    if (drawable.geometry) geometries.add(drawable.geometry);
+    if (Array.isArray(drawable.material)) drawable.material.forEach((material) => materials.add(material));
+    else if (drawable.material) materials.add(drawable.material);
+    if (drawable instanceof THREE.InstancedMesh) drawable.dispose();
+  });
+
+  geometries.forEach((geometry) => geometry.dispose());
+  materials.forEach((material) => material.dispose());
+  scene.clear();
 }
 
 function helixPoint(progress: number, phaseOffset = 0) {
@@ -108,49 +150,51 @@ function helixPoint(progress: number, phaseOffset = 0) {
 
 export function createDnaScene(): SceneBundle {
   const scene = createScene(0x041318, 0.075);
+  const resources = new ResourceTracker();
+  try {
   const root = new THREE.Group();
   scene.add(root);
-  addStars(scene, 0x82eaf1, 360, 17);
+  addStars(scene, resources, 0x82eaf1, 360, 17);
 
   const railMaterials = [
-    new THREE.MeshPhysicalMaterial({
+    resources.track(new THREE.MeshPhysicalMaterial({
       color: 0x2ad6e6,
       emissive: 0x063d45,
       emissiveIntensity: 1.2,
       roughness: 0.24,
       metalness: 0.64,
       clearcoat: 0.75,
-    }),
-    new THREE.MeshPhysicalMaterial({
+    })),
+    resources.track(new THREE.MeshPhysicalMaterial({
       color: 0xff814d,
       emissive: 0x49150a,
       emissiveIntensity: 1.15,
       roughness: 0.28,
       metalness: 0.58,
       clearcoat: 0.7,
-    }),
+    })),
   ] as const;
 
   for (const [railIndex, phaseOffset] of [0, Math.PI].entries()) {
     const points = Array.from({ length: 129 }, (_, index) => helixPoint(index / 128, phaseOffset));
     const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.45);
-    const geometry = new THREE.TubeGeometry(curve, 220, 0.105, 10, false);
+    const geometry = resources.track(new THREE.TubeGeometry(curve, 220, 0.105, 10, false));
     root.add(new THREE.Mesh(geometry, railMaterials[railIndex]));
   }
 
   const pairCount = 44;
-  const pairGeometry = new THREE.CylinderGeometry(0.036, 0.036, 1, 10);
-  const pairMaterial = new THREE.MeshStandardMaterial({
+  const pairGeometry = resources.track(new THREE.CylinderGeometry(0.036, 0.036, 1, 10));
+  const pairMaterial = resources.track(new THREE.MeshStandardMaterial({
     color: 0xc8e2e3,
     emissive: 0x173a3d,
     emissiveIntensity: 0.75,
     roughness: 0.34,
     metalness: 0.52,
-  });
-  const pairs = new THREE.InstancedMesh(pairGeometry, pairMaterial, pairCount);
-  const nodeGeometry = new THREE.SphereGeometry(0.105, 16, 12);
-  const cyanNodes = new THREE.InstancedMesh(nodeGeometry, railMaterials[0], pairCount);
-  const amberNodes = new THREE.InstancedMesh(nodeGeometry, railMaterials[1], pairCount);
+  }));
+  const pairs = resources.track(new THREE.InstancedMesh(pairGeometry, pairMaterial, pairCount));
+  const nodeGeometry = resources.track(new THREE.SphereGeometry(0.105, 16, 12));
+  const cyanNodes = resources.track(new THREE.InstancedMesh(nodeGeometry, railMaterials[0], pairCount));
+  const amberNodes = resources.track(new THREE.InstancedMesh(nodeGeometry, railMaterials[1], pairCount));
   const transform = new THREE.Object3D();
   const up = new THREE.Vector3(0, 1, 0);
 
@@ -212,6 +256,11 @@ export function createDnaScene(): SceneBundle {
       camera.lookAt(wide ? 0.5 : 0, 0, 0);
     },
   };
+  } catch (error) {
+    resources.dispose();
+    scene.clear();
+    throw error;
+  }
 }
 
 function colorPlanetGeometry(geometry: THREE.SphereGeometry) {
@@ -239,15 +288,17 @@ function colorPlanetGeometry(geometry: THREE.SphereGeometry) {
 
 export function createPlanetScene(): SceneBundle {
   const scene = createScene(0x080715, 0.052);
-  addStars(scene, 0xdde9ff, 720, 26);
+  const resources = new ResourceTracker();
+  try {
+  addStars(scene, resources, 0xdde9ff, 720, 26);
   const system = new THREE.Group();
   const planetAssembly = new THREE.Group();
   system.add(planetAssembly);
   scene.add(system);
 
-  const planetGeometry = new THREE.SphereGeometry(1.58, 72, 48);
+  const planetGeometry = resources.track(new THREE.SphereGeometry(1.58, 72, 48));
   colorPlanetGeometry(planetGeometry);
-  const planetMaterial = new THREE.MeshPhysicalMaterial({
+  const planetMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     vertexColors: true,
     roughness: 0.72,
     metalness: 0.04,
@@ -255,13 +306,13 @@ export function createPlanetScene(): SceneBundle {
     clearcoatRoughness: 0.5,
     emissive: 0x17030b,
     emissiveIntensity: 0.35,
-  });
+  }));
   const planet = new THREE.Mesh(planetGeometry, planetMaterial);
   planetAssembly.add(planet);
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.68, 48, 32),
-    new THREE.MeshPhysicalMaterial({
+    resources.track(new THREE.SphereGeometry(1.68, 48, 32)),
+    resources.track(new THREE.MeshPhysicalMaterial({
       color: 0xff7a50,
       emissive: 0x5f1427,
       emissiveIntensity: 1.4,
@@ -271,14 +322,14 @@ export function createPlanetScene(): SceneBundle {
       metalness: 0,
       side: THREE.BackSide,
       depthWrite: false,
-    }),
+    })),
   );
   planetAssembly.add(atmosphere);
 
   const craterCount = 18;
-  const craterGeometry = new THREE.TorusGeometry(0.1, 0.018, 7, 22);
-  const craterMaterial = new THREE.MeshStandardMaterial({ color: 0x260917, roughness: 0.94 });
-  const craters = new THREE.InstancedMesh(craterGeometry, craterMaterial, craterCount);
+  const craterGeometry = resources.track(new THREE.TorusGeometry(0.1, 0.018, 7, 22));
+  const craterMaterial = resources.track(new THREE.MeshStandardMaterial({ color: 0x260917, roughness: 0.94 }));
+  const craters = resources.track(new THREE.InstancedMesh(craterGeometry, craterMaterial, craterCount));
   const transform = new THREE.Object3D();
   const forward = new THREE.Vector3(0, 0, 1);
   for (let index = 0; index < craterCount; index += 1) {
@@ -299,8 +350,8 @@ export function createPlanetScene(): SceneBundle {
   planetAssembly.add(craters);
 
   const ring = new THREE.Mesh(
-    new THREE.RingGeometry(2.04, 2.55, 128),
-    new THREE.MeshStandardMaterial({
+    resources.track(new THREE.RingGeometry(2.04, 2.55, 128)),
+    resources.track(new THREE.MeshStandardMaterial({
       color: 0xffc47c,
       emissive: 0x3b160a,
       emissiveIntensity: 0.8,
@@ -309,15 +360,15 @@ export function createPlanetScene(): SceneBundle {
       roughness: 0.55,
       side: THREE.DoubleSide,
       depthWrite: false,
-    }),
+    })),
   );
   ring.rotation.x = 1.22;
   ring.rotation.z = -0.14;
   planetAssembly.add(ring);
 
   const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(0.15, 20, 14),
-    new THREE.MeshStandardMaterial({ color: 0xe4d8cc, roughness: 0.82 }),
+    resources.track(new THREE.SphereGeometry(0.15, 20, 14)),
+    resources.track(new THREE.MeshStandardMaterial({ color: 0xe4d8cc, roughness: 0.82 })),
   );
   system.add(moon);
 
@@ -348,36 +399,45 @@ export function createPlanetScene(): SceneBundle {
       camera.lookAt(wide ? 0.55 : 0, 0, 0);
     },
   };
+  } catch (error) {
+    resources.dispose();
+    scene.clear();
+    throw error;
+  }
 }
 
 function createEducationScene(): SceneBundle {
   const scene = createScene(0x061118, 0.07);
-  addStars(scene, 0x72dfff, 260, 16);
+  const resources = new ResourceTracker();
+  try {
+  addStars(scene, resources, 0x72dfff, 260, 16);
   const root = new THREE.Group();
   scene.add(root);
 
   const nodes: THREE.Mesh[] = [];
-  const nodeMaterial = new THREE.MeshPhysicalMaterial({
+  const nodeMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     color: 0x55deef,
     emissive: 0x0b4e59,
     emissiveIntensity: 1.2,
     roughness: 0.24,
     metalness: 0.6,
-  });
+  }));
   const linePositions: number[] = [];
   for (let index = 0; index < 9; index += 1) {
     const angle = index * 2.1;
     const radius = 0.6 + index * 0.3;
     const position = new THREE.Vector3(Math.cos(angle) * radius, (index - 4) * 0.55, Math.sin(angle) * 0.55);
-    const node = new THREE.Mesh(new THREE.IcosahedronGeometry(index % 3 === 0 ? 0.18 : 0.11, 1), nodeMaterial);
+    const nodeGeometry = resources.track(new THREE.IcosahedronGeometry(index % 3 === 0 ? 0.18 : 0.11, 1));
+    const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
     node.position.copy(position);
     nodes.push(node);
     root.add(node);
     if (index > 0) linePositions.push(...nodes[index - 1].position.toArray(), ...position.toArray());
   }
-  const lineGeometry = new THREE.BufferGeometry();
+  const lineGeometry = resources.track(new THREE.BufferGeometry());
   lineGeometry.setAttribute("position", new THREE.Float32BufferAttribute(linePositions, 3));
-  root.add(new THREE.LineSegments(lineGeometry, new THREE.LineBasicMaterial({ color: 0x4ccbd8, transparent: true, opacity: 0.45 })));
+  const lineMaterial = resources.track(new THREE.LineBasicMaterial({ color: 0x4ccbd8, transparent: true, opacity: 0.45 }));
+  root.add(new THREE.LineSegments(lineGeometry, lineMaterial));
   scene.add(new THREE.HemisphereLight(0x8cecff, 0x061019, 2.1));
   const key = new THREE.PointLight(0x55deef, 22, 12);
   key.position.set(2, 1, 3);
@@ -394,15 +454,22 @@ function createEducationScene(): SceneBundle {
       camera.lookAt(0.45, 0, 0);
     },
   };
+  } catch (error) {
+    resources.dispose();
+    scene.clear();
+    throw error;
+  }
 }
 
 function createSignalScene(warm: boolean): SceneBundle {
   const color = warm ? 0xff835f : 0x67d8ff;
   const scene = createScene(warm ? 0x150908 : 0x050e15, 0.06);
-  addStars(scene, color, 240, 17);
+  const resources = new ResourceTracker();
+  try {
+  addStars(scene, resources, color, 240, 17);
   const root = new THREE.Group();
   scene.add(root);
-  const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.42 });
+  const material = resources.track(new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.42 }));
 
   for (let track = 0; track < 12; track += 1) {
     const points = Array.from({ length: 72 }, (_, index) => {
@@ -410,7 +477,9 @@ function createSignalScene(warm: boolean): SceneBundle {
       const y = (track - 5.5) * 0.38 + Math.sin(index * 0.34 + track * 1.8) * (0.08 + (track % 3) * 0.035);
       return new THREE.Vector3(x, y, Math.sin(index * 0.17 + track) * 0.34);
     });
-    root.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), material));
+    const geometry = resources.track(new THREE.BufferGeometry());
+    geometry.setFromPoints(points);
+    root.add(new THREE.Line(geometry, material));
   }
   scene.add(new THREE.AmbientLight(color, 1.4));
   const key = new THREE.PointLight(color, 18, 14);
@@ -428,6 +497,11 @@ function createSignalScene(warm: boolean): SceneBundle {
       camera.lookAt(0.35, 0, 0);
     },
   };
+  } catch (error) {
+    resources.dispose();
+    scene.clear();
+    throw error;
+  }
 }
 
 export function createThreeStage(canvas: HTMLCanvasElement): ThreeStage {
@@ -492,33 +566,12 @@ export function updateThreeScene(
   stage.renderer.render(bundle.scene, stage.camera);
 }
 
-function disposeMaterial(material: THREE.Material) {
-  material.dispose();
-}
-
 export function disposeThreeStage(stage: ThreeStage) {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-
   Object.values(stage.scenes).forEach((bundle) => {
     if (!bundle) return;
-    const { scene } = bundle;
-    scene.traverse((object) => {
-      const drawable = object as THREE.Object3D & {
-        geometry?: THREE.BufferGeometry;
-        material?: THREE.Material | THREE.Material[];
-        dispose?: () => void;
-      };
-      if (drawable.geometry) geometries.add(drawable.geometry);
-      if (Array.isArray(drawable.material)) drawable.material.forEach((material) => materials.add(material));
-      else if (drawable.material) materials.add(drawable.material);
-      if (drawable instanceof THREE.InstancedMesh) drawable.dispose();
-    });
-    scene.clear();
+    disposeScene(bundle.scene);
   });
 
-  geometries.forEach((geometry) => geometry.dispose());
-  materials.forEach((material) => disposeMaterial(material));
   stage.renderer.setAnimationLoop(null);
   stage.renderer.dispose();
 }

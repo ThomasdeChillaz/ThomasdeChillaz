@@ -235,7 +235,11 @@ test("shares scroll progress and safely cleans up WebGL", async () => {
   assert.match(sceneSource, /geometry\.dispose\(\)/);
   assert.match(sceneSource, /material\.dispose\(\)/);
   assert.match(sceneSource, /renderer\.dispose\(\)/);
+  assert.match(sceneSource, /class ResourceTracker/);
+  assert.match(sceneSource, /catch\s*\(error\)\s*\{[^}]*resources\.dispose\(\)/s);
   assert.match(sceneSource, /webglcontextlost/);
+  assert.match(sceneSource, /dispatchEvent\(new Event\("webglready"\)\)/);
+  assert.match(sceneSource, /catch\s*\{[^}]*dataset\.webgl\s*=\s*"fallback"[^}]*disposeThreeStage/s);
   assert.match(sceneSource, /data-webgl/);
   assert.match(html, /class="scene-fallback"[^>]*aria-hidden="true"/i);
   assert.match(sceneSource, /try\s*\{[\s\S]*createThreeStage/);

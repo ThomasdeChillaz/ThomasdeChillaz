@@ -113,10 +113,43 @@ test("gives health a dedicated DNA scene and professional reveal system", async 
   assert.match(css, /\[data-reveal\]\[data-revealed="true"\]/);
 });
 
+test("scrubs cinematic scene cameras from chapter scroll progress", async () => {
+  const response = await render();
+  const [html, sceneSource, css] = await Promise.all([
+    response.text(),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8").catch(() => ""),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  const scrollScenes = [...html.matchAll(/data-scroll-scene="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(new Set(scrollScenes), new Set(["health", "space", "education", "building", "impact"]));
+  const healthSection = html.match(/<section[^>]*data-chapter="health"[\s\S]*?<\/section>/)?.[0] ?? "";
+  const healthSteps = [...healthSection.matchAll(/<article[^>]*data-scene-step="([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  assert.equal(new Set(healthSteps).size, 3);
+  assert.match(html, /data-scroll-copy/);
+  assert.match(sceneSource, /function getChapterProgress/);
+  assert.match(sceneSource, /addEventListener\("scroll"/);
+  assert.match(sceneSource, /drawDna\([^)]*\bprogress\b[^)]*\)/);
+  assert.match(sceneSource, /drawPlanet\([^)]*\bprogress\b[^)]*\)/);
+  assert.match(sceneSource, /drawEducation\([^)]*\bprogress\b[^)]*\)/);
+  assert.match(sceneSource, /drawSignalField\([^)]*\bprogress\b[^)]*\)/);
+  assert.match(sceneSource, /translate\([^)]*progress/);
+  assert.match(sceneSource, /scale\([^)]*progress/);
+  assert.match(sceneSource, /reducedMotion\s*\?\s*[\d.]+\s*:\s*getChapterProgress/);
+  assert.match(css, /\[data-scroll-copy\][^{]*\{[^}]*animation-timeline:\s*view\(\)[^}]*animation-range:/s);
+  assert.match(
+    css,
+    /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*(?:animation:\s*none|animation-name:\s*none)[^}]*opacity:\s*1[^}]*transform:\s*none/s,
+  );
+});
+
 test("removes starter artifacts and preserves reduced-motion support", async () => {
-  const [css, source, page, layout, packageJson] = await Promise.all([
+  const [css, source, scenes, page, layout, packageJson] = await Promise.all([
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/PortfolioExperience.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8").catch(() => ""),
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
@@ -126,7 +159,7 @@ test("removes starter artifacts and preserves reduced-motion support", async () 
   assert.match(reducedMotion, /scroll-behavior:\s*auto/);
   assert.match(reducedMotion, /animation-duration:\s*0\.01ms\s*!important/);
   assert.match(reducedMotion, /transition-duration:\s*0\.01ms\s*!important/);
-  assert.match(source, /matchMedia\("\(prefers-reduced-motion: reduce\)"\)/);
+  assert.match(`${source}\n${scenes}`, /matchMedia\("\(prefers-reduced-motion: reduce\)"\)/);
   assert.match(page, /Thomas de Chillaz/);
   assert.match(layout, /Thomas de Chillaz/);
   assert.doesNotMatch(page, /SkeletonPreview|codex-preview/);

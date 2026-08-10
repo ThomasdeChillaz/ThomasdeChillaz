@@ -388,7 +388,11 @@ main { position: relative; z-index: 2; }
 .model-flow strong { color: #06100b; background: var(--accent); }
 .model-flow i { flex: 1; min-width: 0.5rem; height: 1px; background: rgba(var(--accent-rgb),0.5); }
 
-.space-section { background: linear-gradient(90deg, rgba(6,8,13,0.9) 0%, rgba(6,8,13,0.5) 48%, transparent 70%); }
+.space-section {
+  background:
+    linear-gradient(180deg, transparent 78%, rgba(5,12,18,0.92) 100%),
+    linear-gradient(90deg, rgba(6,8,13,0.9) 0%, rgba(6,8,13,0.5) 48%, transparent 70%);
+}
 .space-rail { padding-top: 24vh; }
 .orbit-card { max-width: 41rem; background: linear-gradient(110deg, rgba(12,10,13,0.94), rgba(12,10,13,0.68), rgba(12,10,13,0.1)); }
 .offset-card { transform: translateX(7%); }
@@ -405,7 +409,12 @@ blockquote p { margin: 0; font-family: Georgia, serif; font-size: clamp(1.6rem, 
 blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-family: var(--font-geist-mono), monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em; }
 
 .education-section, .building-section, .skills-section, .contact-section { padding: 10rem clamp(2rem, 7vw, 8.8rem); }
-.education-section { min-height: 290vh; background: linear-gradient(90deg, rgba(5,9,12,0.92), rgba(5,9,12,0.46) 51%, transparent 76%); }
+.education-section {
+  min-height: 290vh;
+  background:
+    linear-gradient(180deg, rgba(5,12,18,0.94), transparent 18%),
+    linear-gradient(90deg, rgba(5,9,12,0.92), rgba(5,9,12,0.46) 51%, transparent 76%);
+}
 .wide-heading { max-width: 68rem; }
 .wide-heading .section-intro { max-width: 48rem; }
 .education-path { position: relative; max-width: 76rem; margin: 8rem auto 0; }
@@ -538,6 +547,20 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
 @media (hover: none), (pointer: coarse) {
   .project-card:hover, .project-card:focus-within, .button:hover { transform: none; }
   .site-header nav a { min-height: 2.75rem; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .research-card, .orbit-card, .portrait-note, .site-header nav {
+    background: #0b0e0f;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .research-card, .orbit-card, .portrait-note {
+    border: 1px solid currentColor;
+    background: #050708;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

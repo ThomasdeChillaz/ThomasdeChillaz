@@ -37,3 +37,16 @@ export const calculateChapterProgress = (
   const distance = Math.max(1, sectionHeight - viewportHeight * 0.76);
   return clamp((scrollY - start) / distance);
 };
+
+/**
+ * A stateless, reversible handoff that begins while education approaches the
+ * viewport and completes just before its content takes over.
+ * @param {number} scrollY
+ * @param {number} educationTop
+ * @param {number} viewportHeight
+ */
+export const calculateEducationTransition = (scrollY, educationTop, viewportHeight) => {
+  const start = educationTop - viewportHeight * 0.8;
+  const end = educationTop - viewportHeight * 0.18;
+  return ease((scrollY - start) / Math.max(1, end - start));
+};

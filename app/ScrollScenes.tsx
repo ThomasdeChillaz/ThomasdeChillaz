@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ThreeStage } from "./ThreeScenes";
-import { calculateChapterProgress, ease, lerp } from "./scrollMath.mjs";
+import { calculateChapterProgress, calculateEducationTransition, ease, lerp } from "./scrollMath.mjs";
 
 export type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
@@ -129,14 +129,17 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     let displayedProgress = targetProgress;
     let frame = 0;
     const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
+    const educationSection = document.querySelector<HTMLElement>('[data-chapter="education"]');
     const storyBeats = createStoryBeats(section);
     const storyStyleCache = new WeakMap<HTMLElement, string>();
     let sectionTop = section?.offsetTop ?? 0;
     let sectionHeight = section?.offsetHeight ?? window.innerHeight;
+    let educationTop = educationSection?.offsetTop ?? Number.POSITIVE_INFINITY;
 
     const measureSection = () => {
       sectionTop = section?.offsetTop ?? 0;
       sectionHeight = section?.offsetHeight ?? window.innerHeight;
+      educationTop = educationSection?.offsetTop ?? Number.POSITIVE_INFINITY;
     };
     const readProgress = () => calculateChapterProgress(
       window.scrollY,
@@ -144,9 +147,17 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       sectionHeight,
       window.innerHeight,
     );
+    const readEducationTransition = () => calculateEducationTransition(
+      window.scrollY,
+      educationTop,
+      window.innerHeight,
+    );
     const paint = () => {
       const stage = stageRef.current;
       const threeScenes = moduleRef.current;
+      const spaceEducationTransition = reducedMotion
+        ? Number(chapter === "education")
+        : readEducationTransition();
       if (stage && threeScenes) {
         try {
           threeScenes.updateThreeScene(
@@ -155,6 +166,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
             displayedProgress,
             window.innerWidth,
             window.innerHeight,
+            spaceEducationTransition,
           );
         } catch {
           stageRef.current = null;
@@ -201,6 +213,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     resize();
     sizeObserver?.observe(document.documentElement);
     if (section) sizeObserver?.observe(section);
+    if (educationSection && educationSection !== section) sizeObserver?.observe(educationSection);
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
     canvas?.addEventListener("webglready", handleStageReady);

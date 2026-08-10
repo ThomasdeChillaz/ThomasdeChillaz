@@ -193,13 +193,14 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
 
 test("uses one procedural Three.js WebGL stage", async () => {
   const response = await render();
-  const [html, scrollSource, threeSource, packageJson] = await Promise.all([
+  const [html, scrollSource, threeSource, satelliteSource, packageJson] = await Promise.all([
     response.text(),
     readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8").catch(() => ""),
+    readFile(new URL("../app/ThreeSatellite.ts", import.meta.url), "utf8").catch(() => ""),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
-  const sceneSource = `${scrollSource}\n${threeSource}`;
+  const sceneSource = `${scrollSource}\n${threeSource}\n${satelliteSource}`;
 
   assert.equal((html.match(/<canvas\b/g) ?? []).length, 1);
   assert.match(html, /<canvas[^>]*aria-hidden="true"/i);
@@ -210,11 +211,7 @@ test("uses one procedural Three.js WebGL stage", async () => {
   assert.match(sceneSource, /new\s+THREE\.PerspectiveCamera\(/);
   assert.match(sceneSource, /function createDnaScene/);
   assert.match(sceneSource, /function createPlanetScene/);
-  assert.match(threeSource, /function createSatellite/);
-  const satelliteSource = threeSource.slice(
-    threeSource.indexOf("function createSatellite"),
-    threeSource.indexOf("export function createPlanetScene"),
-  );
+  assert.match(satelliteSource, /function createSatellite/);
   const planetSource = threeSource.slice(
     threeSource.indexOf("export function createPlanetScene"),
     threeSource.indexOf("function createEducationScene"),
@@ -223,7 +220,7 @@ test("uses one procedural Three.js WebGL stage", async () => {
   assert.match(satelliteSource, /resources\.track\(new THREE\.(?:Box|Cylinder)Geometry/);
   assert.match(satelliteSource, /resources\.track\(new THREE\.(?:Plane|Box)Geometry/);
   assert.match(planetSource, /createSatellite\(resources\)/);
-  assert.match(planetSource, /updateSatellite\(satellite,\s*progress\)/);
+  assert.match(planetSource, /updateSatellite\(satellite,\s*progress,\s*reducedTransparency\)/);
   assert.match(sceneSource, /Math\.sin/);
   assert.match(sceneSource, /Math\.cos/);
   assert.match(sceneSource, /(?:TubeGeometry|InstancedMesh|CylinderGeometry)/);
@@ -236,6 +233,10 @@ test("uses one procedural Three.js WebGL stage", async () => {
 
 test("transitions reversibly from space into education using scroll only", async () => {
   const { calculateEducationTransition } = await import("../app/scrollMath.mjs");
+  const {
+    calculateEducationRelayStart,
+    calculateSatelliteSpaceEndpoint,
+  } = await import("../app/satelliteMath.mjs");
   const educationTop = 5000;
   const viewportHeight = 1000;
   const positions = [4100, 4500, 4900];
@@ -250,13 +251,22 @@ test("transitions reversibly from space into education using scroll only", async
   assert.ok(forward[1] > 0 && forward[1] < 1);
   assert.equal(forward[2], 1);
   assert.deepEqual(reverse, forward.toReversed());
+  for (const wide of [true, false]) {
+    assert.deepEqual(calculateEducationRelayStart(wide), calculateSatelliteSpaceEndpoint(wide));
+  }
 
-  const [scrollSource, threeSource] = await Promise.all([
+  const [scrollSource, threeSource, satelliteSource] = await Promise.all([
     readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/ThreeSatellite.ts", import.meta.url), "utf8"),
   ]);
   assert.match(scrollSource, /calculateEducationTransition\(/);
-  assert.match(scrollSource, /reducedMotion\s*\?\s*Number\(chapter === "education"\)\s*:\s*readEducationTransition\(\)/);
+  assert.match(
+    scrollSource,
+    /reducedMotion\s*\|\|\s*reducedTransparency\s*\?\s*Number\(chapter === "education"\)\s*:\s*readEducationTransition\(\)/,
+  );
+  assert.match(satelliteSource, /reducedTransparency\s*\?\s*0\s*:\s*scanIn/);
+  assert.match(threeSource, /reducedTransparency\s*\?\s*0\s*:\s*0\.035/);
   assert.match(
     scrollSource,
     /updateThreeScene\([^;]*displayedProgress[^;]*spaceEducationTransition[^;]*\)/s,

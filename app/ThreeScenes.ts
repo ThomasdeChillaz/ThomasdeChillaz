@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { createSatellite, updateEducationRelay, updateSatellite } from "./ThreeSatellite";
+import { satelliteSpaceSystemEnd } from "./satelliteMath.mjs";
 
 export type ThreeChapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
@@ -20,20 +22,31 @@ const DNA_ROTATION_Z_TRACK = [[0, -0.16], [0.44, -0.36], [1, -0.57]] as const;
 
 const PLANET_SCALE_TRACK = [
   [0, 2.18], [0.15, 2.18], [0.25, 1.36], [0.45, 1.36],
-  [0.55, 0.98], [0.76, 0.98], [0.86, 0.76], [1, 0.76],
+  [0.55, 0.98], [0.76, 0.98], [0.86, satelliteSpaceSystemEnd.scale], [1, satelliteSpaceSystemEnd.scale],
 ] as const;
 const PLANET_X_WIDE_TRACK = [
-  [0, 3.3], [0.15, 3.3], [0.25, 2.6], [0.55, 2.05], [0.86, 1.48], [1, 1.48],
+  [0, 3.3], [0.15, 3.3], [0.25, 2.6], [0.55, 2.05],
+  [0.86, satelliteSpaceSystemEnd.xWide], [1, satelliteSpaceSystemEnd.xWide],
 ] as const;
 const PLANET_X_NARROW_TRACK = [
-  [0, 1.35], [0.15, 1.35], [0.25, 0.95], [0.55, 0.55], [0.86, 0.18], [1, 0.18],
+  [0, 1.35], [0.15, 1.35], [0.25, 0.95], [0.55, 0.55],
+  [0.86, satelliteSpaceSystemEnd.xNarrow], [1, satelliteSpaceSystemEnd.xNarrow],
 ] as const;
-const PLANET_Y_TRACK = [[0, 0.8], [0.25, 0.38], [0.55, 0.04], [0.86, -0.26], [1, -0.26]] as const;
+const PLANET_Y_TRACK = [
+  [0, 0.8], [0.25, 0.38], [0.55, 0.04],
+  [0.86, satelliteSpaceSystemEnd.y], [1, satelliteSpaceSystemEnd.y],
+] as const;
 const PLANET_ROTATION_Z_TRACK = [[0, -0.04], [0.55, -0.18], [1, -0.28]] as const;
 
 type SceneBundle = Readonly<{
   scene: THREE.Scene;
-  update: (progress: number, width: number, height: number, camera: THREE.PerspectiveCamera) => void;
+  update: (
+    progress: number,
+    width: number,
+    height: number,
+    camera: THREE.PerspectiveCamera,
+    reducedTransparency: boolean,
+  ) => void;
 }>;
 
 type Disposable = { dispose: () => void };
@@ -263,171 +276,6 @@ export function createDnaScene(): SceneBundle {
   }
 }
 
-type Satellite = THREE.Group & {
-  userData: {
-    leftPanel: THREE.Group;
-    rightPanel: THREE.Group;
-    beacon: THREE.Mesh;
-    scanMaterial: THREE.MeshBasicMaterial;
-  };
-};
-
-function createSatellite(resources: ResourceTracker): Satellite {
-  const satellite = new THREE.Group() as Satellite;
-  const busMaterial = resources.track(new THREE.MeshPhysicalMaterial({
-    color: 0xd8c3a0,
-    emissive: 0x21160a,
-    emissiveIntensity: 0.36,
-    roughness: 0.28,
-    metalness: 0.82,
-    clearcoat: 0.42,
-  }));
-  const darkMetal = resources.track(new THREE.MeshStandardMaterial({
-    color: 0x1a222a,
-    roughness: 0.34,
-    metalness: 0.88,
-  }));
-  const panelMaterial = resources.track(new THREE.MeshPhysicalMaterial({
-    color: 0x102d52,
-    emissive: 0x071b36,
-    emissiveIntensity: 0.72,
-    roughness: 0.22,
-    metalness: 0.56,
-    clearcoat: 0.64,
-  }));
-  const dishMaterial = resources.track(new THREE.MeshStandardMaterial({
-    color: 0xe8edf1,
-    roughness: 0.24,
-    metalness: 0.74,
-    side: THREE.DoubleSide,
-  }));
-
-  const busGeometry = resources.track(new THREE.BoxGeometry(0.58, 0.42, 0.44));
-  satellite.add(new THREE.Mesh(busGeometry, busMaterial));
-
-  const panelGeometry = resources.track(new THREE.BoxGeometry(0.78, 0.035, 0.34));
-  const panelFrameGeometry = resources.track(new THREE.BoxGeometry(0.82, 0.045, 0.025));
-  const hingeGeometry = resources.track(new THREE.CylinderGeometry(0.045, 0.045, 0.28, 12));
-  const leftPanel = new THREE.Group();
-  const rightPanel = new THREE.Group();
-  leftPanel.name = "satellite-panel-left";
-  rightPanel.name = "satellite-panel-right";
-  leftPanel.position.x = -0.69;
-  rightPanel.position.x = 0.69;
-  leftPanel.add(new THREE.Mesh(panelGeometry, panelMaterial));
-  rightPanel.add(new THREE.Mesh(panelGeometry, panelMaterial));
-
-  for (const panel of [leftPanel, rightPanel]) {
-    const upperFrame = new THREE.Mesh(panelFrameGeometry, busMaterial);
-    const lowerFrame = new THREE.Mesh(panelFrameGeometry, busMaterial);
-    upperFrame.position.z = 0.17;
-    lowerFrame.position.z = -0.17;
-    panel.add(upperFrame, lowerFrame);
-  }
-  const leftHinge = new THREE.Mesh(hingeGeometry, darkMetal);
-  const rightHinge = new THREE.Mesh(hingeGeometry, darkMetal);
-  leftHinge.rotation.z = Math.PI / 2;
-  rightHinge.rotation.z = Math.PI / 2;
-  leftHinge.position.x = 0.44;
-  rightHinge.position.x = -0.44;
-  leftPanel.add(leftHinge);
-  rightPanel.add(rightHinge);
-  satellite.add(leftPanel, rightPanel);
-
-  const mast = new THREE.Mesh(
-    resources.track(new THREE.CylinderGeometry(0.025, 0.025, 0.42, 10)),
-    darkMetal,
-  );
-  mast.position.y = 0.38;
-  satellite.add(mast);
-  const dish = new THREE.Mesh(
-    resources.track(new THREE.SphereGeometry(0.22, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.46)),
-    dishMaterial,
-  );
-  dish.position.y = 0.58;
-  dish.rotation.z = Math.PI;
-  satellite.add(dish);
-  const sensor = new THREE.Mesh(
-    resources.track(new THREE.SphereGeometry(0.07, 14, 10)),
-    resources.track(new THREE.MeshStandardMaterial({
-      color: 0xffb15c,
-      emissive: 0xff6a27,
-      emissiveIntensity: 1.7,
-      roughness: 0.3,
-    })),
-  );
-  sensor.position.set(0.16, 0.16, 0.25);
-  satellite.add(sensor);
-
-  const scanMaterial = resources.track(new THREE.MeshBasicMaterial({
-    color: 0x72dfff,
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  }));
-  const scanCone = new THREE.Mesh(
-    resources.track(new THREE.ConeGeometry(0.28, 1.15, 24, 1, true)),
-    scanMaterial,
-  );
-  scanCone.position.y = -0.78;
-  satellite.add(scanCone);
-
-  satellite.userData = { leftPanel, rightPanel, beacon: sensor, scanMaterial };
-  return satellite;
-}
-
-const satelliteOrbitPosition = new THREE.Vector3();
-const satelliteHandoffPosition = new THREE.Vector3(-1.1, 1.25, 4.6);
-
-function updateSatellite(satellite: Satellite, progress: number) {
-  const reveal = smooth((progress - 0.1) / 0.18);
-  const orbitProgress = smooth((progress - 0.12) / 0.66);
-  const angle = -1.1 + orbitProgress * 4.7;
-  satelliteOrbitPosition.set(
-    Math.cos(angle) * 3.2,
-    0.22 + Math.sin(angle * 0.82) * 0.86,
-    Math.sin(angle) * 1.65,
-  );
-  const handoff = smooth((progress - 0.76) / 0.24);
-  satellite.position.lerpVectors(satelliteOrbitPosition, satelliteHandoffPosition, handoff);
-  const scale = THREE.MathUtils.lerp(0.06, 0.38, reveal) * (1 - handoff) + 0.82 * handoff;
-  satellite.scale.setScalar(scale);
-  satellite.rotation.set(
-    0.14 + progress * 0.41,
-    -angle + 0.8 + handoff * 0.24,
-    0.08 + handoff * 0.49,
-  );
-  satellite.userData.leftPanel.rotation.y = 0.08 + reveal * 0.14 + handoff * 0.44;
-  satellite.userData.rightPanel.rotation.y = -0.08 - reveal * 0.14 - handoff * 0.44;
-  const scanIn = smooth((progress - 0.46) / 0.09);
-  const scanOut = 1 - smooth((progress - 0.76) / 0.1);
-  satellite.userData.scanMaterial.opacity = scanIn * scanOut * 0.17;
-  satellite.userData.beacon.scale.setScalar(0.82 + reveal * 0.38);
-}
-
-function updateEducationRelay(satellite: Satellite, progress: number, wide: boolean) {
-  const settle = smooth(progress / 0.22);
-  const startX = wide ? 0.64 : -0.66;
-  satellite.position.set(
-    THREE.MathUtils.lerp(startX, wide ? 2.05 : 0.38, settle),
-    THREE.MathUtils.lerp(0.69, 0.08, settle),
-    THREE.MathUtils.lerp(3.5, 0, settle),
-  );
-  const disappear = smooth((progress - 0.16) / 0.16);
-  satellite.scale.setScalar(THREE.MathUtils.lerp(0.62, 0.12, settle) * (1 - disappear * 0.82));
-  satellite.rotation.set(
-    THREE.MathUtils.lerp(0.55, 0.04, settle),
-    THREE.MathUtils.lerp(-2.56, 0.3, settle),
-    THREE.MathUtils.lerp(0.57, 0, settle),
-  );
-  satellite.userData.leftPanel.rotation.y = THREE.MathUtils.lerp(0.66, 0.05, settle);
-  satellite.userData.rightPanel.rotation.y = THREE.MathUtils.lerp(-0.66, -0.05, settle);
-  satellite.userData.scanMaterial.opacity = 0;
-  satellite.userData.beacon.scale.setScalar(THREE.MathUtils.lerp(1.2, 1.85, settle));
-}
-
 function colorPlanetGeometry(geometry: THREE.SphereGeometry) {
   const position = geometry.getAttribute("position");
   const colors = new Float32Array(position.count * 3);
@@ -566,7 +414,7 @@ export function createPlanetScene(): SceneBundle {
 
   return {
     scene,
-    update(progress, width, height, camera) {
+    update(progress, width, height, camera, reducedTransparency) {
       const wide = width / Math.max(height, 1) > 1.15;
       const scale = sampleTrack(progress, PLANET_SCALE_TRACK);
       system.scale.setScalar(scale);
@@ -579,10 +427,10 @@ export function createPlanetScene(): SceneBundle {
       planetAssembly.rotation.z = sampleTrack(progress, PLANET_ROTATION_Z_TRACK);
       const moonAngle = progress * Math.PI * 1.5 + 0.6;
       moon.position.set(Math.cos(moonAngle) * 3.2, Math.sin(moonAngle) * 1.1, Math.sin(moonAngle) * 1.7);
-      updateSatellite(satellite, progress);
+      updateSatellite(satellite, progress, reducedTransparency);
       const orbitReveal = smooth((progress - 0.12) / 0.16);
       const orbitQuiet = 1 - smooth((progress - 0.8) / 0.16);
-      orbitMaterial.opacity = 0.035 + orbitReveal * orbitQuiet * 0.16;
+      orbitMaterial.opacity = reducedTransparency ? 0 : 0.035 + orbitReveal * orbitQuiet * 0.16;
       camera.position.set(0, 0, wide ? 7.6 : 9.1);
       camera.lookAt(wide ? 0.55 : 0, 0, 0);
     },
@@ -795,6 +643,7 @@ function updateSpaceEducationTransition(
   width: number,
   height: number,
   transition: number,
+  reducedTransparency: boolean,
 ) {
   const blend = smooth(transition);
   const space = getOrCreateScene(stage, "space");
@@ -802,29 +651,29 @@ function updateSpaceEducationTransition(
   const renderer = stage.renderer;
 
   if (blend <= 0.001) {
-    space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera);
+    setSceneOpacity(space.scene, 1);
+    space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera, reducedTransparency);
     renderer.render(space.scene, stage.camera);
     return;
   }
   if (blend >= 0.999) {
-    education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera);
+    setSceneOpacity(education.scene, 1);
+    education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera, reducedTransparency);
     renderer.render(education.scene, stage.camera);
     return;
   }
 
   renderer.autoClear = false;
   renderer.clear(true, true, true);
-  space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera);
+  space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera, reducedTransparency);
   setHandoffCamera(stage.camera, width, height);
   setSceneOpacity(space.scene, 1 - blend);
   renderer.render(space.scene, stage.camera);
   renderer.clearDepth();
-  education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera);
+  education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera, reducedTransparency);
   setHandoffCamera(stage.camera, width, height);
   setSceneOpacity(education.scene, blend);
   renderer.render(education.scene, stage.camera);
-  setSceneOpacity(space.scene, 1);
-  setSceneOpacity(education.scene, 1);
   renderer.autoClear = true;
 }
 
@@ -848,6 +697,7 @@ export function updateThreeScene(
   width: number,
   height: number,
   spaceEducationTransition: number,
+  reducedTransparency: boolean,
 ) {
   resizeStage(stage, width, height);
   if (chapter === "space" || chapter === "education") {
@@ -858,11 +708,12 @@ export function updateThreeScene(
       width,
       height,
       spaceEducationTransition,
+      reducedTransparency,
     );
     return;
   }
   const bundle = getOrCreateScene(stage, chapter);
-  bundle.update(clamp(progress), width, height, stage.camera);
+  bundle.update(clamp(progress), width, height, stage.camera, reducedTransparency);
   stage.renderer.render(bundle.scene, stage.camera);
 }
 

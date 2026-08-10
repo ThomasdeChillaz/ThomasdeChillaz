@@ -561,6 +561,19 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
     border: 1px solid currentColor;
     background: #050708;
   }
+  .wordmark, .site-header nav {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid currentColor;
+    background: #050708;
+  }
+}
+
+@media (forced-colors: active) {
+  .scene-canvas, .scene-fallback, .portfolio::after { display: none !important; }
+  .site-header, .wordmark, .site-header nav {
+    color: CanvasText;
+    background: Canvas;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

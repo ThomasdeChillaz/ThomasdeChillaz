@@ -124,7 +124,9 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const transparencyMedia = window.matchMedia("(prefers-reduced-transparency: reduce)");
     let reducedMotion = media.matches;
+    let reducedTransparency = transparencyMedia.matches;
     let targetProgress = reducedMotion ? 0.64 : getChapterProgress(chapter);
     let displayedProgress = targetProgress;
     let frame = 0;
@@ -155,7 +157,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     const paint = () => {
       const stage = stageRef.current;
       const threeScenes = moduleRef.current;
-      const spaceEducationTransition = reducedMotion
+      const spaceEducationTransition = reducedMotion || reducedTransparency
         ? Number(chapter === "education")
         : readEducationTransition();
       if (stage && threeScenes) {
@@ -167,6 +169,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
             window.innerWidth,
             window.innerHeight,
             spaceEducationTransition,
+            reducedTransparency,
           );
         } catch {
           stageRef.current = null;
@@ -201,6 +204,10 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       displayedProgress = reducedMotion ? 0.64 : readProgress();
       schedule(true);
     };
+    const handleTransparencyPreference = (event: MediaQueryListEvent) => {
+      reducedTransparency = event.matches;
+      schedule(true);
+    };
     const handleScroll = () => schedule();
     const handleStageReady = () => schedule(true);
     const sizeObserver = "ResizeObserver" in window
@@ -218,6 +225,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     window.addEventListener("resize", resize);
     canvas?.addEventListener("webglready", handleStageReady);
     media.addEventListener("change", handleMotionPreference);
+    transparencyMedia.addEventListener("change", handleTransparencyPreference);
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame);
@@ -226,6 +234,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
       window.removeEventListener("resize", resize);
       canvas?.removeEventListener("webglready", handleStageReady);
       media.removeEventListener("change", handleMotionPreference);
+      transparencyMedia.removeEventListener("change", handleTransparencyPreference);
     };
   }, [chapter]);
 

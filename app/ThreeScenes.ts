@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createSatellite, updateEducationRelay, updateSatellite } from "./ThreeSatellite";
 import { createBuildingScene, createReachScene } from "./ThreeFeatureScenes";
-import { getDnaPresentation } from "./dnaPresentation.mjs";
+import { createDnaPresentation, getDnaPresentation } from "./dnaPresentation.mjs";
 import { satelliteSpaceSystemEnd } from "./satelliteMath.mjs";
 
 export type ThreeChapter = "hero" | "health" | "space" | "education" | "building" | "impact";
@@ -155,6 +155,7 @@ export function createDnaScene(): SceneBundle {
   try {
   const root = new THREE.Group();
   scene.add(root);
+  const dnaPresentation = createDnaPresentation();
   addStars(scene, resources, 0x82eaf1, 360, 17);
 
   const railMaterials = [
@@ -241,7 +242,7 @@ export function createDnaScene(): SceneBundle {
     scene,
     update(progress, width, height, camera) {
       const wide = width / Math.max(height, 1) > 1.15;
-      const pose = getDnaPresentation(progress, wide);
+      const pose = getDnaPresentation(progress, wide, dnaPresentation);
       root.scale.setScalar(pose.scale);
       root.position.set(pose.x, pose.y, 0);
       root.rotation.set(

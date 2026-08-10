@@ -2,45 +2,55 @@
 
 export const DNA_STRAND_HEIGHT = 7.3;
 
+/** @typedef {readonly [number, number]} TrackPoint */
+/** @typedef {readonly [TrackPoint, ...TrackPoint[]]} Track */
+/**
+ * @typedef {{
+ *   scale: number,
+ *   x: number,
+ *   y: number,
+ *   rotationX: number,
+ *   rotationY: number,
+ *   rotationZ: number,
+ *   cameraZ: number,
+ *   lookX: number,
+ * }} DnaPresentation
+ */
+
+/**
+ * @param {number} progress
+ * @param {number} value
+ * @returns {TrackPoint}
+ */
+const point = (progress, value) => Object.freeze([progress, value]);
+
+/** @type {Track} */
 const scaleTrack = Object.freeze([
-  Object.freeze([0, 1.04]),
-  Object.freeze([0.14, 1.04]),
-  Object.freeze([0.24, 0.98]),
-  Object.freeze([0.46, 0.92]),
-  Object.freeze([0.68, 0.86]),
-  Object.freeze([1, 0.82]),
+  point(0, 1.04), point(0.14, 1.04), point(0.24, 0.98),
+  point(0.46, 0.92), point(0.68, 0.86), point(1, 0.82),
 ]);
+/** @type {Track} */
 const xWideTrack = Object.freeze([
-  Object.freeze([0, 2.6]),
-  Object.freeze([0.18, 2.5]),
-  Object.freeze([0.4, 2.2]),
-  Object.freeze([0.66, 1.82]),
-  Object.freeze([1, 1.5]),
+  point(0, 2.6), point(0.18, 2.5), point(0.4, 2.2),
+  point(0.66, 1.82), point(1, 1.5),
 ]);
+/** @type {Track} */
 const xNarrowTrack = Object.freeze([
-  Object.freeze([0, 0.72]),
-  Object.freeze([0.18, 0.66]),
-  Object.freeze([0.4, 0.52]),
-  Object.freeze([0.66, 0.32]),
-  Object.freeze([1, 0.12]),
+  point(0, 0.72), point(0.18, 0.66), point(0.4, 0.52),
+  point(0.66, 0.32), point(1, 0.12),
 ]);
+/** @type {Track} */
 const yTrack = Object.freeze([
-  Object.freeze([0, 0.18]),
-  Object.freeze([0.22, 0.1]),
-  Object.freeze([0.48, 0]),
-  Object.freeze([0.72, -0.14]),
-  Object.freeze([1, -0.28]),
+  point(0, 0.18), point(0.22, 0.1), point(0.48, 0),
+  point(0.72, -0.14), point(1, -0.28),
 ]);
+/** @type {Track} */
 const rotationYTrack = Object.freeze([
-  Object.freeze([0, -0.42]),
-  Object.freeze([0.34, -0.08]),
-  Object.freeze([0.68, 0.34]),
-  Object.freeze([1, 0.62]),
+  point(0, -0.42), point(0.34, -0.08), point(0.68, 0.34), point(1, 0.62),
 ]);
+/** @type {Track} */
 const rotationZTrack = Object.freeze([
-  Object.freeze([0, -0.1]),
-  Object.freeze([0.46, -0.25]),
-  Object.freeze([1, -0.42]),
+  point(0, -0.1), point(0.46, -0.25), point(1, -0.42),
 ]);
 
 /** @param {number} value */
@@ -53,7 +63,7 @@ const smooth = (value) => {
 
 /**
  * @param {number} progress
- * @param {ReadonlyArray<readonly number[]>} points
+ * @param {Track} points
  */
 function sampleTrack(progress, points) {
   if (progress <= points[0][0]) return points[0][1];
@@ -68,20 +78,35 @@ function sampleTrack(progress, points) {
   return points[points.length - 1][1];
 }
 
+/** @returns {DnaPresentation} */
+export function createDnaPresentation() {
+  return {
+    scale: 1,
+    x: 0,
+    y: 0,
+    rotationX: 0,
+    rotationY: 0,
+    rotationZ: 0,
+    cameraZ: 10,
+    lookX: 0,
+  };
+}
+
 /**
  * @param {number} progress
  * @param {boolean} wide
+ * @param {DnaPresentation} [output]
+ * @returns {DnaPresentation}
  */
-export function getDnaPresentation(progress, wide) {
+export function getDnaPresentation(progress, wide, output = createDnaPresentation()) {
   const bounded = clamp(progress);
-  return {
-    scale: sampleTrack(bounded, scaleTrack),
-    x: sampleTrack(bounded, wide ? xWideTrack : xNarrowTrack),
-    y: sampleTrack(bounded, yTrack),
-    rotationX: 0.12 + bounded * 0.16,
-    rotationY: sampleTrack(bounded, rotationYTrack),
-    rotationZ: sampleTrack(bounded, rotationZTrack),
-    cameraZ: wide ? 9.8 : 11.2,
-    lookX: wide ? 0.45 : 0,
-  };
+  output.scale = sampleTrack(bounded, scaleTrack);
+  output.x = sampleTrack(bounded, wide ? xWideTrack : xNarrowTrack);
+  output.y = sampleTrack(bounded, yTrack);
+  output.rotationX = 0.12 + bounded * 0.16;
+  output.rotationY = sampleTrack(bounded, rotationYTrack);
+  output.rotationZ = sampleTrack(bounded, rotationZTrack);
+  output.cameraZ = wide ? 9.8 : 11.2;
+  output.lookX = wide ? 0.45 : 0;
+  return output;
 }

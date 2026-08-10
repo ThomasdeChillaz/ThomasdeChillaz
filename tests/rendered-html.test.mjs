@@ -255,7 +255,7 @@ test("keeps the DNA helix framed throughout the health story", async () => {
     threeSource.indexOf("export function createDnaScene"),
     threeSource.indexOf("export function createPlanetScene"),
   );
-  assert.match(dnaSource, /getDnaPresentation\(progress,\s*wide\)/);
+  assert.match(dnaSource, /getDnaPresentation\(progress,\s*wide,\s*dnaPresentation\)/);
 });
 
 test("renders a ring-free procedurally surfaced planet", async () => {
@@ -305,6 +305,11 @@ test("uses distinct scroll-directed 3D systems for Build and Reach", async () =>
   assert.match(scrollSource, /prefers-reduced-motion:\s*reduce/);
   assert.match(scrollSource, /prefers-reduced-transparency:\s*reduce/);
   assert.match(css, /prefers-reduced-transparency:\s*reduce[\s\S]*backdrop-filter:\s*none/);
+  assert.match(css, /\.project-card\s*\{[^}]*background:\s*linear-gradient[^}]*rgba\([^)]*,0\.9/s);
+  assert.match(css, /\.impact-copy\s*\{[^}]*background:\s*linear-gradient[^}]*rgba\([^)]*,0\.8/s);
+  const increasedContrast = extractCssBlock(css, "@media (prefers-contrast: more)");
+  assert.match(increasedContrast, /\.project-card/);
+  assert.match(increasedContrast, /\.impact-copy/);
 });
 
 test("transitions reversibly from space into education using scroll only", async () => {

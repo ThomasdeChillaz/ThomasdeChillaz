@@ -251,6 +251,7 @@ export function createReachScene(): FeatureSceneBundle {
     }));
     const nodes = resources.track(new THREE.InstancedMesh(nodeGeometry, nodeMaterial, nodeCount));
     nodes.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    nodes.frustumCulled = false;
     root.add(nodes);
 
     const nodeOffsets = Array.from({ length: nodeCount }, (_, index) => new THREE.Vector3(
@@ -269,7 +270,9 @@ export function createReachScene(): FeatureSceneBundle {
       opacity: 0,
       depthWrite: false,
     }));
-    root.add(new THREE.LineSegments(lineGeometry, lineMaterial));
+    const connections = new THREE.LineSegments(lineGeometry, lineMaterial);
+    connections.frustumCulled = false;
+    root.add(connections);
     const transform = new THREE.Object3D();
 
     scene.add(new THREE.HemisphereLight(0xffc2a8, 0x120506, 1.65));
@@ -306,16 +309,19 @@ export function createReachScene(): FeatureSceneBundle {
           transform.scale.setScalar(0.05 + arrival * 0.95);
           transform.updateMatrix();
           nodes.setMatrixAt(index, transform.matrix);
-          const lineIndex = index * 6;
-          linePositions[lineIndex] = hub.position.x;
-          linePositions[lineIndex + 1] = hub.position.y;
-          linePositions[lineIndex + 2] = hub.position.z;
-          linePositions[lineIndex + 3] = transform.position.x;
-          linePositions[lineIndex + 4] = transform.position.y;
-          linePositions[lineIndex + 5] = transform.position.z;
+          if (!reducedTransparency) {
+            const lineIndex = index * 6;
+            linePositions[lineIndex] = hub.position.x;
+            linePositions[lineIndex + 1] = hub.position.y;
+            linePositions[lineIndex + 2] = hub.position.z;
+            linePositions[lineIndex + 3] = transform.position.x;
+            linePositions[lineIndex + 4] = transform.position.y;
+            linePositions[lineIndex + 5] = transform.position.z;
+          }
         }
         nodes.instanceMatrix.needsUpdate = true;
-        lineAttribute.needsUpdate = true;
+        connections.visible = !reducedTransparency;
+        if (!reducedTransparency) lineAttribute.needsUpdate = true;
         lineMaterial.opacity = reducedTransparency ? 0 : spread * (1 - story * 0.62) * 0.28;
         backdropMaterial.opacity = reducedTransparency ? 0 : 0.3;
         nodeMaterial.emissiveIntensity = 0.8 + spread * 0.8;

@@ -221,6 +221,113 @@ test("maps DNA and scene progress symmetrically in both scroll directions", asyn
   assert.match(scrollSource, /requestAnimationFrame\(paintFrame\)/);
 });
 
+test("navigates only eligible arrow-key story beats", async () => {
+  const { resolveBeatNavigation } = await import("../app/keyboardNavigation.mjs");
+  const plain = {
+    repeat: false,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    defaultPrevented: false,
+    isComposing: false,
+    editable: false,
+  };
+
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowDown" }, 1, 4), {
+    handled: true,
+    targetIndex: 2,
+  });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowRight" }, 1, 4), {
+    handled: true,
+    targetIndex: 2,
+  });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowUp" }, 2, 4), {
+    handled: true,
+    targetIndex: 1,
+  });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowLeft" }, 2, 4), {
+    handled: true,
+    targetIndex: 1,
+  });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowDown", repeat: true }, 1, 4), {
+    handled: true,
+    targetIndex: null,
+  });
+
+  for (const input of [
+    { ...plain, key: "Enter" },
+    { ...plain, key: "ArrowDown", editable: true },
+    { ...plain, key: "ArrowDown", altKey: true },
+    { ...plain, key: "ArrowDown", ctrlKey: true },
+    { ...plain, key: "ArrowDown", metaKey: true },
+    { ...plain, key: "ArrowDown", shiftKey: true },
+    { ...plain, key: "ArrowDown", defaultPrevented: true },
+    { ...plain, key: "ArrowDown", isComposing: true },
+  ]) {
+    assert.deepEqual(resolveBeatNavigation(input, 1, 4), {
+      handled: false,
+      targetIndex: null,
+    });
+  }
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowUp" }, 0, 4), {
+    handled: false,
+    targetIndex: null,
+  });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowDown" }, 3, 4), {
+    handled: false,
+    targetIndex: null,
+  });
+});
+
+test("scrolls keyboard beats through the synchronized chapter timeline", async () => {
+  const {
+    calculateChapterProgress,
+    calculateScrollYForChapterProgress,
+  } = await import("../app/scrollMath.mjs");
+  const sectionTop = 1800;
+  const sectionHeight = 3300;
+  const viewportHeight = 1000;
+  for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
+    const scrollY = calculateScrollYForChapterProgress(
+      progress,
+      sectionTop,
+      sectionHeight,
+      viewportHeight,
+    );
+    assert.ok(
+      Math.abs(
+        calculateChapterProgress(scrollY, sectionTop, sectionHeight, viewportHeight) - progress,
+      ) < 1e-12,
+    );
+  }
+
+  const response = await render();
+  const [html, source, css] = await Promise.all([
+    response.text(),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(source, /querySelectorAll<HTMLElement>\("\[data-scroll-copy\]\[data-beat-range\]"\)/);
+  assert.match(source, /resolveBeatNavigation\(/);
+  assert.match(source, /if\s*\(!navigation\.handled\)\s*return;[\s\S]{0,120}event\.preventDefault\(\)/);
+  assert.match(source, /isContentEditable/);
+  assert.match(source, /closest<HTMLElement>\("input, textarea, select/);
+  assert.match(source, /calculateScrollYForChapterProgress\(/);
+  assert.match(
+    source,
+    /scrollTo\(\{[^}]*top[^}]*behavior:\s*reducedMotion\s*\?\s*"auto"\s*:\s*"smooth"/s,
+  );
+  assert.match(source, /addEventListener\("keydown",\s*handleKeyDown\)/);
+  assert.match(source, /removeEventListener\("keydown",\s*handleKeyDown\)/);
+
+  const cue = html.match(/<p[^>]*class="scroll-cue"[^>]*>[\s\S]*?<\/p>/i)?.[0] ?? "";
+  assert.match(cue, /arrow keys/i);
+  assert.doesNotMatch(cue, /scroll to enter/i);
+  const coarsePointer = extractCssBlock(css, "@media (hover: none), (pointer: coarse)");
+  assert.match(coarsePointer, /\.scroll-cue\s*\{[^}]*display:\s*none/);
+});
+
 test("uses one procedural Three.js WebGL stage", async () => {
   const response = await render();
   const [html, scrollSource, threeSource, satelliteSource, packageJson] = await Promise.all([

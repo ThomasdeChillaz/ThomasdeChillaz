@@ -166,15 +166,17 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
     assert.ok(range.every((point, index) => index === 0 || point >= range[index - 1]));
     assert.ok(range[3] <= 1, `Beat must complete by chapter end: ${range.join(",")}`);
   });
-  assert.match(sceneSource, /function getChapterProgress/);
+  assert.match(sceneSource, /querySelectorAll<HTMLElement>\("\[data-chapter\]"\)/);
   assert.match(sceneSource, /addEventListener\("scroll"/);
-  assert.match(sceneSource, /reducedMotion\s*\?\s*reducedMotionProgress\s*:\s*getChapterProgress/);
+  assert.match(sceneSource, /calculateSceneState\(/);
+  assert.match(sceneSource, /resolveSceneProgress\(/);
   assert.match(sceneSource, /building:\s*0\.82/);
   assert.match(sceneSource, /impact:\s*0\.64/);
   assert.doesNotMatch(css, /(?:animation|view|scroll)-timeline|@keyframes\s+scroll-copy/i);
   assert.match(sceneSource, /function updateStoryBeats\([^)]*progress[^)]*reducedMotion[^)]*\)/);
-  assert.match(sceneSource, /updateThreeScene\([^;]*displayedProgress[^;]*\)/s);
-  assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
+  assert.match(sceneSource, /updateThreeScene\([^;]*sceneState\.fromChapter[^;]*sceneState\.toChapter[^;]*transition[^;]*\)/s);
+  assert.match(sceneSource, /updateStoryBeats\([^;]*resolveSceneProgress[^;]*reducedMotion[^;]*\)/s);
+  assert.doesNotMatch(sceneSource, /displayedProgress\s*\+\s*delta|lastScrollY|scrollDirection/);
   assert.match(sceneSource, /setProperty\("--beat-opacity"/);
   assert.match(sceneSource, /setProperty\("--beat-translate-y"/);
   assert.match(sceneSource, /setProperty\("--beat-clip-top"/);
@@ -191,6 +193,31 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
     css,
     /prefers-reduced-motion:\s*reduce[\s\S]*\[data-scroll-copy\][^{]*\{[^}]*opacity:\s*1[^}]*transform:\s*none/s,
   );
+});
+
+test("maps DNA and scene progress symmetrically in both scroll directions", async () => {
+  const { resolveSceneProgress } = await import("../app/scrollMath.mjs");
+  const { getDnaPresentation } = await import("../app/dnaPresentation.mjs");
+  const samples = [0, 0.2, 0.44, 0.71, 1];
+  const down = samples.map((progress) => resolveSceneProgress(progress, false, 0.64));
+  const up = samples.toReversed().map((progress) => resolveSceneProgress(progress, false, 0.64));
+
+  assert.deepEqual(down, samples);
+  assert.deepEqual(up, down.toReversed());
+  assert.equal(resolveSceneProgress(0.2, true, 0.64), 0.64);
+  assert.deepEqual(
+    samples.toReversed().map((progress) => getDnaPresentation(progress, true)),
+    samples.map((progress) => getDnaPresentation(progress, true)).toReversed(),
+  );
+
+  const scrollSource = await readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(scrollSource, /displayedProgress\s*\+\s*delta|lastScrollY|scrollDirection/);
+  const paintFrame = scrollSource.slice(
+    scrollSource.indexOf("const paintFrame"),
+    scrollSource.indexOf("const schedule"),
+  );
+  assert.doesNotMatch(paintFrame, /requestAnimationFrame/);
+  assert.match(scrollSource, /requestAnimationFrame\(paintFrame\)/);
 });
 
 test("uses one procedural Three.js WebGL stage", async () => {
@@ -312,26 +339,32 @@ test("uses distinct scroll-directed 3D systems for Build and Reach", async () =>
   assert.match(increasedContrast, /\.impact-copy/);
 });
 
-test("transitions reversibly from space into education using scroll only", async () => {
-  const { calculateEducationTransition } = await import("../app/scrollMath.mjs");
+test("blends every adjacent chapter boundary with one reversible scroll function", async () => {
+  const { calculateBoundaryTransition } = await import("../app/scrollMath.mjs");
   const {
     calculateEducationRelayStart,
     calculateSatelliteSpaceEndpoint,
   } = await import("../app/satelliteMath.mjs");
-  const educationTop = 5000;
   const viewportHeight = 1000;
-  const positions = [4100, 4500, 4900];
-  const forward = positions.map((scrollY) =>
-    calculateEducationTransition(scrollY, educationTop, viewportHeight),
-  );
-  const reverse = positions.toReversed().map((scrollY) =>
-    calculateEducationTransition(scrollY, educationTop, viewportHeight),
-  );
-
-  assert.equal(forward[0], 0);
-  assert.ok(forward[1] > 0 && forward[1] < 1);
-  assert.equal(forward[2], 1);
-  assert.deepEqual(reverse, forward.toReversed());
+  const boundaryTops = [2000, 5000, 8000, 11000, 14000];
+  boundaryTops.forEach((nextTop) => {
+    const positions = [nextTop - 900, nextTop - 490, nextTop - 100];
+    const forward = positions.map((scrollY) =>
+      calculateBoundaryTransition(scrollY, nextTop, viewportHeight),
+    );
+    const reverse = positions.toReversed().map((scrollY) =>
+      calculateBoundaryTransition(scrollY, nextTop, viewportHeight),
+    );
+    assert.deepEqual(forward, [0, 0.5, 1]);
+    assert.deepEqual(reverse, forward.toReversed());
+    const dense = Array.from({ length: 63 }, (_, index) =>
+      calculateBoundaryTransition(nextTop - 800 + index * 10, nextTop, viewportHeight),
+    );
+    dense.slice(1).forEach((value, index) => {
+      assert.ok(value >= dense[index]);
+      assert.ok(value - dense[index] < 0.03);
+    });
+  });
   for (const wide of [true, false]) {
     assert.deepEqual(calculateEducationRelayStart(wide), calculateSatelliteSpaceEndpoint(wide));
   }
@@ -341,19 +374,23 @@ test("transitions reversibly from space into education using scroll only", async
     readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/ThreeSatellite.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(scrollSource, /calculateEducationTransition\(/);
+  assert.match(scrollSource, /calculateSceneState\(/);
   assert.match(
     scrollSource,
-    /reducedMotion\s*\|\|\s*reducedTransparency\s*\?\s*Number\(chapter === "education"\)\s*:\s*readEducationTransition\(\)/,
+    /reducedMotion\s*\|\|\s*reducedTransparency\s*\?\s*Number\(sceneState\.mix >= 0\.5\)\s*:\s*sceneState\.mix/,
   );
   assert.match(satelliteSource, /reducedTransparency\s*\?\s*0\s*:\s*scanIn/);
   assert.match(threeSource, /atmosphereMaterial\.opacity\s*=\s*reducedTransparency\s*\?\s*0\s*:\s*0\.11/);
   assert.match(
     scrollSource,
-    /updateThreeScene\([^;]*displayedProgress[^;]*spaceEducationTransition[^;]*\)/s,
+    /updateThreeScene\([^;]*sceneState\.fromChapter[^;]*sceneState\.toChapter[^;]*transition[^;]*\)/s,
   );
-  assert.match(threeSource, /function updateSpaceEducationTransition\([^)]*transition[^)]*\)/s);
-  assert.match(threeSource, /updateSpaceEducationTransition\([^;]*spaceEducationTransition[^;]*\)/s);
+  assert.match(threeSource, /function updateChapterTransition\([^)]*fromChapter[^)]*toChapter[^)]*transition[^)]*\)/s);
+  assert.match(threeSource, /getOrCreateScene\(stage,\s*fromChapter\)/);
+  assert.match(threeSource, /getOrCreateScene\(stage,\s*toChapter\)/);
+  assert.match(threeSource, /setSceneOpacity\(from\.scene,\s*1 - blend\)/);
+  assert.match(threeSource, /setSceneOpacity\(to\.scene,\s*blend\)/);
+  assert.doesNotMatch(threeSource, /updateSpaceEducationTransition|chapter === "space" \|\| chapter === "education"/);
   assert.doesNotMatch(threeSource, /requestAnimationFrame|performance\.now|setInterval/);
   assert.doesNotMatch(threeSource, /setAnimationLoop\((?!null)/);
 });
@@ -368,8 +405,8 @@ test("shares scroll progress and safely cleans up WebGL", async () => {
   ]);
   const sceneSource = `${scrollSource}\n${threeSource}`;
 
-  assert.match(sceneSource, /updateThreeScene\([^;]*displayedProgress[^;]*\)/s);
-  assert.match(sceneSource, /updateStoryBeats\([^;]*displayedProgress[^;]*reducedMotion[^;]*\)/s);
+  assert.match(sceneSource, /updateThreeScene\([^;]*sceneState\.fromChapter[^;]*sceneState\.toChapter[^;]*\)/s);
+  assert.match(sceneSource, /updateStoryBeats\([^;]*resolveSceneProgress[^;]*reducedMotion[^;]*\)/s);
   assert.match(sceneSource, /geometry\.dispose\(\)/);
   assert.match(sceneSource, /material\.dispose\(\)/);
   assert.match(sceneSource, /renderer\.dispose\(\)/);

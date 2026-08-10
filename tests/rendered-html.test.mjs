@@ -231,6 +231,80 @@ test("uses one procedural Three.js WebGL stage", async () => {
   assert.doesNotMatch(sceneSource, /GLTFLoader|\.glb|\.gltf/);
 });
 
+test("keeps the DNA helix framed throughout the health story", async () => {
+  const { DNA_STRAND_HEIGHT, getDnaPresentation } = await import("../app/dnaPresentation.mjs");
+  const samples = [0.02, 0.28, 0.5, 0.75, 0.9];
+
+  for (const wide of [true, false]) {
+    const poses = samples.map((progress) => getDnaPresentation(progress, wide));
+    poses.forEach((pose) => {
+      const visibleHeight = 2 * pose.cameraZ * Math.tan((34 * Math.PI) / 360);
+      assert.ok(Object.values(pose).every(Number.isFinite));
+      assert.ok(pose.scale >= 0.78 && pose.scale <= 1.08);
+      assert.ok(DNA_STRAND_HEIGHT * pose.scale <= visibleHeight * 1.32);
+      assert.ok(pose.y >= -0.45 && pose.y <= 0.25);
+      assert.ok(wide ? pose.x >= 1.25 && pose.x <= 2.7 : pose.x >= -0.05 && pose.x <= 0.9);
+    });
+    assert.ok(poses.at(-1).scale >= poses[0].scale * 0.76);
+  }
+
+  const threeSource = await readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8");
+  const dnaSource = threeSource.slice(
+    threeSource.indexOf("export function createDnaScene"),
+    threeSource.indexOf("function colorPlanetGeometry"),
+  );
+  assert.match(dnaSource, /getDnaPresentation\(progress,\s*wide\)/);
+});
+
+test("renders a ring-free procedurally surfaced planet", async () => {
+  const threeSource = await readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8");
+  const planetSource = threeSource.slice(
+    threeSource.indexOf("export function createPlanetScene"),
+    threeSource.indexOf("function createEducationScene"),
+  );
+
+  assert.doesNotMatch(planetSource, /RingGeometry|TorusGeometry|LineLoop/);
+  assert.match(planetSource, /function deformPlanetSurface/);
+  assert.match(planetSource, /position\.setXYZ\(/);
+  assert.match(planetSource, /computeVertexNormals\(\)/);
+  assert.match(planetSource, /MeshPhysicalMaterial/);
+  assert.match(planetSource, /transparent:\s*true/);
+  assert.match(planetSource, /side:\s*THREE\.BackSide/);
+});
+
+test("uses distinct scroll-directed 3D systems for Build and Reach", async () => {
+  const [threeSource, featureSource, scrollSource, css] = await Promise.all([
+    readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/ThreeFeatureScenes.ts", import.meta.url), "utf8").catch(() => ""),
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  const buildingSource = featureSource.slice(
+    featureSource.indexOf("export function createBuildingScene"),
+    featureSource.indexOf("export function createReachScene"),
+  );
+  const reachSource = featureSource.slice(featureSource.indexOf("export function createReachScene"));
+
+  assert.match(featureSource, /export function createBuildingScene/);
+  assert.match(featureSource, /export function createReachScene/);
+  assert.match(threeSource, /chapter === "building"[^;]*createBuildingScene\(\)/);
+  assert.match(threeSource, /chapter === "impact"[^;]*createReachScene\(\)/);
+  assert.doesNotMatch(threeSource, /createSignalScene/);
+  assert.match(buildingSource, /new THREE\.Group\(\)/);
+  assert.match(buildingSource, /new THREE\.(?:BoxGeometry|CylinderGeometry)/);
+  assert.match(buildingSource, /update\(progress/);
+  assert.match(buildingSource, /progress/);
+  assert.match(reachSource, /new THREE\.InstancedMesh/);
+  assert.match(reachSource, /new THREE\.(?:IcosahedronGeometry|SphereGeometry)/);
+  assert.match(reachSource, /update\(progress/);
+  assert.match(reachSource, /progress/);
+  assert.doesNotMatch(`${threeSource}\n${featureSource}`, /requestAnimationFrame|performance\.now|setInterval/);
+  assert.doesNotMatch(`${threeSource}\n${featureSource}`, /setAnimationLoop\((?!null)/);
+  assert.match(scrollSource, /prefers-reduced-motion:\s*reduce/);
+  assert.match(scrollSource, /prefers-reduced-transparency:\s*reduce/);
+  assert.match(css, /prefers-reduced-transparency:\s*reduce[\s\S]*backdrop-filter:\s*none/);
+});
+
 test("transitions reversibly from space into education using scroll only", async () => {
   const { calculateEducationTransition } = await import("../app/scrollMath.mjs");
   const {

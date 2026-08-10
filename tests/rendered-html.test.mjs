@@ -210,6 +210,20 @@ test("uses one procedural Three.js WebGL stage", async () => {
   assert.match(sceneSource, /new\s+THREE\.PerspectiveCamera\(/);
   assert.match(sceneSource, /function createDnaScene/);
   assert.match(sceneSource, /function createPlanetScene/);
+  assert.match(threeSource, /function createSatellite/);
+  const satelliteSource = threeSource.slice(
+    threeSource.indexOf("function createSatellite"),
+    threeSource.indexOf("export function createPlanetScene"),
+  );
+  const planetSource = threeSource.slice(
+    threeSource.indexOf("export function createPlanetScene"),
+    threeSource.indexOf("function createEducationScene"),
+  );
+  assert.match(satelliteSource, /new THREE\.Group\(\)/);
+  assert.match(satelliteSource, /resources\.track\(new THREE\.(?:Box|Cylinder)Geometry/);
+  assert.match(satelliteSource, /resources\.track\(new THREE\.(?:Plane|Box)Geometry/);
+  assert.match(planetSource, /createSatellite\(resources\)/);
+  assert.match(planetSource, /updateSatellite\(satellite,\s*progress\)/);
   assert.match(sceneSource, /Math\.sin/);
   assert.match(sceneSource, /Math\.cos/);
   assert.match(sceneSource, /(?:TubeGeometry|InstancedMesh|CylinderGeometry)/);
@@ -218,6 +232,39 @@ test("uses one procedural Three.js WebGL stage", async () => {
   assert.match(sceneSource, /(?:AmbientLight|DirectionalLight|PointLight|HemisphereLight)/);
   assert.doesNotMatch(sceneSource, /CanvasRenderingContext2D|getContext\(["']2d["']\)|createRadialGradient/);
   assert.doesNotMatch(sceneSource, /GLTFLoader|\.glb|\.gltf/);
+});
+
+test("transitions reversibly from space into education using scroll only", async () => {
+  const { calculateEducationTransition } = await import("../app/scrollMath.mjs");
+  const educationTop = 5000;
+  const viewportHeight = 1000;
+  const positions = [4100, 4500, 4900];
+  const forward = positions.map((scrollY) =>
+    calculateEducationTransition(scrollY, educationTop, viewportHeight),
+  );
+  const reverse = positions.toReversed().map((scrollY) =>
+    calculateEducationTransition(scrollY, educationTop, viewportHeight),
+  );
+
+  assert.equal(forward[0], 0);
+  assert.ok(forward[1] > 0 && forward[1] < 1);
+  assert.equal(forward[2], 1);
+  assert.deepEqual(reverse, forward.toReversed());
+
+  const [scrollSource, threeSource] = await Promise.all([
+    readFile(new URL("../app/ScrollScenes.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(scrollSource, /calculateEducationTransition\(/);
+  assert.match(scrollSource, /reducedMotion\s*\?\s*Number\(chapter === "education"\)\s*:\s*readEducationTransition\(\)/);
+  assert.match(
+    scrollSource,
+    /updateThreeScene\([^;]*displayedProgress[^;]*spaceEducationTransition[^;]*\)/s,
+  );
+  assert.match(threeSource, /function updateSpaceEducationTransition\([^)]*transition[^)]*\)/s);
+  assert.match(threeSource, /updateSpaceEducationTransition\([^;]*spaceEducationTransition[^;]*\)/s);
+  assert.doesNotMatch(threeSource, /requestAnimationFrame|performance\.now|setInterval/);
+  assert.doesNotMatch(threeSource, /setAnimationLoop\((?!null)/);
 });
 
 test("shares scroll progress and safely cleans up WebGL", async () => {

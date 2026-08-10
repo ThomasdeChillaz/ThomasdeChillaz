@@ -39,6 +39,25 @@ export const calculateChapterProgress = (
 };
 
 /**
+ * Inverts calculateChapterProgress so keyboard navigation and scene rendering
+ * resolve to the same normalized chapter position.
+ * @param {number} progress
+ * @param {number} sectionTop
+ * @param {number} sectionHeight
+ * @param {number} viewportHeight
+ */
+export const calculateScrollYForChapterProgress = (
+  progress,
+  sectionTop,
+  sectionHeight,
+  viewportHeight,
+) => {
+  const start = sectionTop - viewportHeight * 0.12;
+  const distance = Math.max(1, sectionHeight - viewportHeight * 0.76);
+  return start + clamp(progress) * distance;
+};
+
+/**
  * A stateless, reversible handoff that begins as the next chapter approaches
  * the viewport and completes just before its content takes over.
  * @param {number} scrollY

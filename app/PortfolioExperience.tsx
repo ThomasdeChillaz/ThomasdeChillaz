@@ -155,8 +155,8 @@ export default function PortfolioExperience() {
         </nav>
       </header>
 
-      <main id="main-content">
-        <section className="hero chapter" id="top" data-chapter="hero" aria-labelledby="hero-title">
+      <main id="main-content" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight">
+        <section className="hero chapter" id="top" data-chapter="hero" data-keyboard-stop aria-labelledby="hero-title">
           <div className="hero-index" aria-hidden="true">01 — 05</div>
           <div className="hero-copy" data-reveal>
             <p className="eyebrow"><span /> Researcher · Builder · Science communicator</p>
@@ -185,7 +185,11 @@ export default function PortfolioExperience() {
             </div>
             <p className="portrait-note"><span>Currently</span> AI & Data student<br />Researching at MIT CSAIL</p>
           </div>
-          <p className="scroll-cue"><span aria-hidden="true" /> Scroll to enter</p>
+          <p className="scroll-cue" id="keyboard-cue">
+            <span className="scroll-cue__line" aria-hidden="true" />
+            <span className="scroll-cue__keyboard">Use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> arrow keys to explore</span>
+            <span className="scroll-cue__touch">Swipe to explore</span>
+          </p>
         </section>
 
         <section className="chapter split-section health-section" id="health" data-chapter="health" data-scroll-scene="health" aria-labelledby="health-title">
@@ -378,7 +382,7 @@ export default function PortfolioExperience() {
           </div>
         </section>
 
-        <section className="skills-section" aria-labelledby="skills-title">
+        <section className="skills-section" data-keyboard-stop aria-labelledby="skills-title">
           <p className="eyebrow"><span /> Toolkit</p>
           <h2 id="skills-title" data-reveal>How I work.</h2>
           <div className="skills-groups">
@@ -391,7 +395,7 @@ export default function PortfolioExperience() {
           </div>
         </section>
 
-        <section className="contact-section" id="contact" aria-labelledby="contact-title" data-reveal>
+        <section className="contact-section" id="contact" data-keyboard-stop aria-labelledby="contact-title" data-reveal>
           <p className="eyebrow"><span /> Open to ambitious ideas</p>
           <h2 id="contact-title">Let&apos;s build what<br /><em>doesn&apos;t exist yet.</em></h2>
           <div className="contact-row">

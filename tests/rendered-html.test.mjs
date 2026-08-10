@@ -222,7 +222,7 @@ test("maps DNA and scene progress symmetrically in both scroll directions", asyn
 });
 
 test("navigates only eligible arrow-key story beats", async () => {
-  const { resolveBeatNavigation } = await import("../app/keyboardNavigation.mjs");
+  const { findBeatCursorIndex, resolveBeatNavigation } = await import("../app/keyboardNavigation.mjs");
   const plain = {
     repeat: false,
     altKey: false,
@@ -278,6 +278,15 @@ test("navigates only eligible arrow-key story beats", async () => {
     handled: false,
     targetIndex: null,
   });
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowDown", repeat: true }, 3, 4), {
+    handled: false,
+    targetIndex: null,
+  });
+  assert.equal(findBeatCursorIndex(250, [0, 100, 200], -1), 3);
+  assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowUp" }, 3, 3), {
+    handled: true,
+    targetIndex: 2,
+  });
 });
 
 test("scrolls keyboard beats through the synchronized chapter timeline", async () => {
@@ -310,7 +319,7 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
   ]);
   assert.match(source, /querySelectorAll<HTMLElement>\("\[data-scroll-copy\]\[data-beat-range\]"\)/);
   assert.match(source, /resolveBeatNavigation\(/);
-  assert.match(source, /if\s*\(!navigation\.handled\)\s*return;[\s\S]{0,120}event\.preventDefault\(\)/);
+  assert.match(source, /if\s*\(!navigation\.handled\)\s*\{[^}]*keyboardIndex\s*=\s*null;[^}]*return;[^}]*\}[\s\S]{0,80}event\.preventDefault\(\)/);
   assert.match(source, /isContentEditable/);
   assert.match(source, /closest<HTMLElement>\("input, textarea, select/);
   assert.match(source, /calculateScrollYForChapterProgress\(/);
@@ -320,12 +329,19 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
   );
   assert.match(source, /addEventListener\("keydown",\s*handleKeyDown\)/);
   assert.match(source, /removeEventListener\("keydown",\s*handleKeyDown\)/);
+  assert.match(source, /addEventListener\("scrollend",\s*resetKeyboardNavigation\)/);
+  assert.match(source, /removeEventListener\("scrollend",\s*resetKeyboardNavigation\)/);
 
   const cue = html.match(/<p[^>]*class="scroll-cue"[^>]*>[\s\S]*?<\/p>/i)?.[0] ?? "";
   assert.match(cue, /arrow keys/i);
   assert.doesNotMatch(cue, /scroll to enter/i);
-  const coarsePointer = extractCssBlock(css, "@media (hover: none), (pointer: coarse)");
-  assert.match(coarsePointer, /\.scroll-cue\s*\{[^}]*display:\s*none/);
+  const coarsePointer = extractCssBlock(
+    css,
+    "@media (hover: none) and (pointer: coarse) and (any-hover: none) and (any-pointer: coarse)",
+  );
+  assert.match(coarsePointer, /\.scroll-cue__keyboard\s*\{[^}]*display:\s*none/);
+  assert.match(coarsePointer, /\.scroll-cue__touch\s*\{[^}]*display:\s*inline/);
+  assert.match(source, /dataset\.keyboardNavigation\s*=\s*"true"/);
 });
 
 test("uses one procedural Three.js WebGL stage", async () => {

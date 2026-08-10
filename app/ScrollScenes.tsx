@@ -3,8 +3,14 @@
 import { useEffect, useRef } from "react";
 import type { ThreeStage } from "./ThreeScenes";
 import {
+  findBeatCursorIndex,
+  getArrowDirection,
+  resolveBeatNavigation,
+} from "./keyboardNavigation.mjs";
+import {
   calculateChapterProgress,
   calculateSceneState,
+  calculateScrollYForChapterProgress,
   ease,
   lerp,
   resolveSceneProgress,
@@ -42,6 +48,11 @@ type ChapterRuntime = Readonly<{
   beats: ReadonlyArray<StoryBeat>;
 }>;
 type SectionMetric = Readonly<{ chapter: Chapter; top: number; height: number }>;
+
+function isInteractiveKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || Boolean(target.closest<HTMLElement>("input, textarea, select, option, button, a, summary, [role='textbox'], [role='slider'], [role='spinbutton'], [role='menu'], [role='tablist'], [role='tree'], [role='grid'], [role='listbox']"));
+}
 
 function parseBeatRange(value: string | undefined): BeatRange {
   const parsed = value?.split(",").map(Number) ?? [];
@@ -215,6 +226,12 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     const chapterSections = Array.from(
       document.querySelectorAll<HTMLElement>("[data-chapter]"),
     );
+    const keyboardBeatElements = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-scroll-copy][data-beat-range]"),
+    );
+    const keyboardStaticElements = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-keyboard-stop]"),
+    );
     const runtimes: ReadonlyArray<ChapterRuntime> = chapterSections.flatMap((element) => {
       const chapter = element.dataset.chapter;
       return isChapter(chapter)
@@ -225,8 +242,11 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     let reducedMotion = media.matches;
     let reducedTransparency = transparencyMedia.matches;
     let sectionMetrics: ReadonlyArray<SectionMetric> = [];
+    let keyboardStops: ReadonlyArray<number> = [0];
+    let keyboardIndex: number | null = null;
     let activeChapter: Chapter | null = null;
     let frame = 0;
+    let scrollSettleTimer = 0;
 
     const measureSections = () => {
       sectionMetrics = runtimes.map(({ chapter, element }) => ({
@@ -234,6 +254,33 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
         top: element.getBoundingClientRect().top + window.scrollY,
         height: element.offsetHeight || window.innerHeight,
       }));
+      const maximumScroll = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+      const beatStops = keyboardBeatElements.flatMap((element) => {
+        const chapter = element.closest<HTMLElement>("[data-chapter]")?.dataset.chapter;
+        if (!isChapter(chapter)) return [];
+        const metric = sectionMetrics.find((candidate) => candidate.chapter === chapter);
+        if (!metric) return [];
+        const [, entered] = parseBeatRange(element.dataset.beatRange);
+        return [calculateScrollYForChapterProgress(
+          entered,
+          metric.top,
+          metric.height,
+          window.innerHeight,
+        )];
+      });
+      const staticStops = keyboardStaticElements.map((element) => (
+        element.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.12
+      ));
+      const orderedStops = [0, ...beatStops, ...staticStops]
+        .map((top) => Math.min(maximumScroll, Math.max(0, top)))
+        .sort((first, second) => first - second);
+      keyboardStops = orderedStops.filter(
+        (top, index) => index === 0 || top - orderedStops[index - 1] > 16,
+      );
+      keyboardIndex = null;
     };
     const paint = () => {
       const sceneState = calculateSceneState(
@@ -328,8 +375,52 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
       reducedTransparency = event.matches;
       schedule();
     };
-    const handleScroll = () => schedule();
+    const resetKeyboardNavigation = () => {
+      keyboardIndex = null;
+    };
+    const handleScroll = () => {
+      schedule();
+      if ("onscrollend" in document) return;
+      window.clearTimeout(scrollSettleTimer);
+      scrollSettleTimer = window.setTimeout(resetKeyboardNavigation, 160);
+    };
     const handleStageReady = () => schedule();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const direction = getArrowDirection(event.key);
+      if (direction !== 0) document.documentElement.dataset.keyboardNavigation = "true";
+      if (direction === 0) keyboardIndex = null;
+      const currentIndex = keyboardIndex ?? findBeatCursorIndex(
+        window.scrollY,
+        keyboardStops,
+        direction,
+      );
+      const selection = window.getSelection();
+      const navigation = resolveBeatNavigation({
+        key: event.key,
+        repeat: event.repeat,
+        altKey: event.altKey,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        shiftKey: event.shiftKey,
+        defaultPrevented: event.defaultPrevented,
+        isComposing: event.isComposing,
+        editable: isInteractiveKeyboardTarget(event.target)
+          || Boolean(selection && !selection.isCollapsed),
+      }, currentIndex, keyboardStops.length);
+      if (!navigation.handled) {
+        keyboardIndex = null;
+        return;
+      }
+      event.preventDefault();
+      if (navigation.targetIndex === null) return;
+      const top = keyboardStops[navigation.targetIndex];
+      if (top === undefined) return;
+      keyboardIndex = navigation.targetIndex;
+      window.scrollTo({
+        top,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    };
     const sizeObserver = "ResizeObserver" in window
       ? new ResizeObserver(() => {
         measureSections();
@@ -342,15 +433,29 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     runtimes.forEach(({ element }) => sizeObserver?.observe(element));
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("wheel", resetKeyboardNavigation, { passive: true });
+    window.addEventListener("touchstart", resetKeyboardNavigation, { passive: true });
+    window.addEventListener("pointerdown", resetKeyboardNavigation, { passive: true });
+    window.addEventListener("hashchange", resetKeyboardNavigation);
+    document.addEventListener("scrollend", resetKeyboardNavigation);
     canvas?.addEventListener("webglready", handleStageReady);
     media.addEventListener("change", handleMotionPreference);
     transparencyMedia.addEventListener("change", handleTransparencyPreference);
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame);
+      window.clearTimeout(scrollSettleTimer);
       sizeObserver?.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("wheel", resetKeyboardNavigation);
+      window.removeEventListener("touchstart", resetKeyboardNavigation);
+      window.removeEventListener("pointerdown", resetKeyboardNavigation);
+      window.removeEventListener("hashchange", resetKeyboardNavigation);
+      document.removeEventListener("scrollend", resetKeyboardNavigation);
+      delete document.documentElement.dataset.keyboardNavigation;
       canvas?.removeEventListener("webglready", handleStageReady);
       media.removeEventListener("change", handleMotionPreference);
       transparencyMedia.removeEventListener("change", handleTransparencyPreference);

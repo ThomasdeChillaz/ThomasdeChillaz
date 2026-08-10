@@ -8,10 +8,12 @@ import {
   resolveBeatNavigation,
 } from "./keyboardNavigation.mjs";
 import {
+  calculateCenteredScrollTarget,
   calculateChapterProgress,
   calculateSceneState,
   calculateScrollYForChapterProgress,
   ease,
+  groupLayoutRows,
   lerp,
   resolveSceneProgress,
 } from "./scrollMath.mjs";
@@ -52,6 +54,16 @@ type SectionMetric = Readonly<{ chapter: Chapter; top: number; height: number }>
 function isInteractiveKeyboardTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || Boolean(target.closest<HTMLElement>("input, textarea, select, option, button, a, summary, [role='textbox'], [role='slider'], [role='spinbutton'], [role='menu'], [role='tablist'], [role='tree'], [role='grid'], [role='listbox']"));
+}
+
+function getElementLayoutTop(element: HTMLElement) {
+  let top = 0;
+  let current: HTMLElement | null = element;
+  while (current) {
+    top += current.offsetTop;
+    current = current.offsetParent instanceof HTMLElement ? current.offsetParent : null;
+  }
+  return top;
 }
 
 function parseBeatRange(value: string | undefined): BeatRange {
@@ -251,7 +263,7 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     const measureSections = () => {
       sectionMetrics = runtimes.map(({ chapter, element }) => ({
         chapter,
-        top: element.getBoundingClientRect().top + window.scrollY,
+        top: getElementLayoutTop(element),
         height: element.offsetHeight || window.innerHeight,
       }));
       const maximumScroll = Math.max(
@@ -263,16 +275,36 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
         if (!isChapter(chapter)) return [];
         const metric = sectionMetrics.find((candidate) => candidate.chapter === chapter);
         if (!metric) return [];
-        const [, entered] = parseBeatRange(element.dataset.beatRange);
-        return [calculateScrollYForChapterProgress(
+        const [, entered, exit] = parseBeatRange(element.dataset.beatRange);
+        const visibleStart = reducedMotion ? 0 : calculateScrollYForChapterProgress(
           entered,
           metric.top,
           metric.height,
           window.innerHeight,
+        );
+        const visibleEnd = reducedMotion ? maximumScroll : calculateScrollYForChapterProgress(
+          exit,
+          metric.top,
+          metric.height,
+          window.innerHeight,
+        );
+        return [calculateCenteredScrollTarget(
+          getElementLayoutTop(element),
+          element.offsetHeight,
+          window.innerHeight,
+          visibleStart,
+          visibleEnd,
         )];
       });
-      const staticStops = keyboardStaticElements.map((element) => (
-        element.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.12
+      const staticStops = groupLayoutRows(keyboardStaticElements.map((element) => ({
+        top: getElementLayoutTop(element),
+        height: element.offsetHeight,
+      }))).map((row) => calculateCenteredScrollTarget(
+        row.top,
+        row.height,
+        window.innerHeight,
+        0,
+        maximumScroll,
       ));
       const orderedStops = [0, ...beatStops, ...staticStops]
         .map((top) => Math.min(maximumScroll, Math.max(0, top)))
@@ -369,6 +401,7 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     };
     const handleMotionPreference = (event: MediaQueryListEvent) => {
       reducedMotion = event.matches;
+      measureSections();
       schedule();
     };
     const handleTransparencyPreference = (event: MediaQueryListEvent) => {
@@ -431,6 +464,8 @@ export function SceneCanvas({ onChapterChange }: { onChapterChange: (chapter: Ch
     resize();
     sizeObserver?.observe(document.documentElement);
     runtimes.forEach(({ element }) => sizeObserver?.observe(element));
+    keyboardBeatElements.forEach((element) => sizeObserver?.observe(element));
+    keyboardStaticElements.forEach((element) => sizeObserver?.observe(element));
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", resize);
     window.addEventListener("keydown", handleKeyDown);

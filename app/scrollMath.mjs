@@ -58,6 +58,52 @@ export const calculateScrollYForChapterProgress = (
 };
 
 /**
+ * Centers an element in the viewport while keeping its scene progress inside
+ * the interval where its complete copy is visible.
+ * @param {number} elementTop
+ * @param {number} elementHeight
+ * @param {number} viewportHeight
+ * @param {number} visibleStart
+ * @param {number} visibleEnd
+ */
+export const calculateCenteredScrollTarget = (
+  elementTop,
+  elementHeight,
+  viewportHeight,
+  visibleStart,
+  visibleEnd,
+) => {
+  const centered = elementTop + elementHeight / 2 - viewportHeight / 2;
+  const alignmentTarget = elementHeight > viewportHeight ? elementTop : centered;
+  return clamp(
+    alignmentTarget,
+    Math.min(visibleStart, visibleEnd),
+    Math.max(visibleStart, visibleEnd),
+  );
+};
+
+/** @typedef {{ top: number, height: number }} LayoutRow */
+
+/**
+ * Combines content laid out on the same visual row while preserving separate
+ * stops after a responsive grid stacks those items vertically.
+ * @param {ReadonlyArray<LayoutRow>} items
+ * @param {number} [tolerance]
+ * @returns {ReadonlyArray<LayoutRow>}
+ */
+export const groupLayoutRows = (items, tolerance = 16) => items.reduce((rows, item) => {
+  const rowIndex = rows.findIndex((row) => Math.abs(row.top - item.top) <= tolerance);
+  if (rowIndex === -1) return [...rows, item];
+
+  const row = rows[rowIndex];
+  const top = Math.min(row.top, item.top);
+  const bottom = Math.max(row.top + row.height, item.top + item.height);
+  return rows.map((candidate, index) => (
+    index === rowIndex ? { top, height: bottom - top } : candidate
+  ));
+}, /** @type {ReadonlyArray<LayoutRow>} */ ([]));
+
+/**
  * A stateless, reversible handoff that begins as the next chapter approaches
  * the viewport and completes just before its content takes over.
  * @param {number} scrollY

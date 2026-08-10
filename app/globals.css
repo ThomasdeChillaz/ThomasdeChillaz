@@ -461,7 +461,7 @@ blockquote cite { display: block; margin-top: 0.9rem; color: #858985; font-famil
 .impact-facts p { color: #878b86; font-family: var(--font-geist-mono), monospace; font-size: 0.57rem; line-height: 1.5; text-transform: uppercase; letter-spacing: 0.07em; }
 
 .skills-section { min-height: auto; border-top: 1px solid rgba(255,255,255,0.12); background: rgba(5,7,8,0.72); }
-.skills-section > h2 { margin: 0; font-size: clamp(3rem, 6vw, 6rem); letter-spacing: -0.06em; }
+.skills-heading h2 { margin: 0; font-size: clamp(3rem, 6vw, 6rem); letter-spacing: -0.06em; }
 .skills-groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 5rem; }
 .skills-groups h3 { padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.13); color: var(--accent); font-family: var(--font-geist-mono), monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
 .skills-groups ul { margin: 0; padding: 0; list-style: none; }

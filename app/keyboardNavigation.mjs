@@ -16,8 +16,8 @@
 
 /** @param {string} key */
 export const getArrowDirection = (key) => {
-  if (key === "ArrowDown" || key === "ArrowRight") return 1;
-  if (key === "ArrowUp" || key === "ArrowLeft") return -1;
+  if (key === "ArrowDown") return 1;
+  if (key === "ArrowUp") return -1;
   return 0;
 };
 

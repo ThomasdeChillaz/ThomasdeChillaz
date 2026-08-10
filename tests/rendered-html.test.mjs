@@ -294,6 +294,7 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
     calculateCenteredScrollTarget,
     calculateChapterProgress,
     calculateScrollYForChapterProgress,
+    groupLayoutRows,
   } = await import("../app/scrollMath.mjs");
   const sectionTop = 1800;
   const sectionHeight = 3300;
@@ -315,6 +316,15 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
   assert.equal(calculateCenteredScrollTarget(1600, 400, 1000, 900, 1700), 1300);
   assert.equal(calculateCenteredScrollTarget(1000, 200, 1000, 700, 1200), 700);
   assert.equal(calculateCenteredScrollTarget(2400, 200, 1000, 900, 1500), 1500);
+  assert.equal(calculateCenteredScrollTarget(1000, 1400, 800, 0, 4000), 1000);
+  assert.deepEqual(groupLayoutRows([
+    { top: 1000, height: 240 },
+    { top: 1004, height: 360 },
+    { top: 1800, height: 220 },
+  ]), [
+    { top: 1000, height: 364 },
+    { top: 1800, height: 220 },
+  ]);
 
   const response = await render();
   const [html, source, css] = await Promise.all([
@@ -329,9 +339,20 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
   assert.match(source, /closest<HTMLElement>\("input, textarea, select/);
   assert.match(source, /calculateScrollYForChapterProgress\(/);
   assert.match(source, /calculateCenteredScrollTarget\(/);
+  assert.match(source, /groupLayoutRows\(/);
   assert.match(source, /const\s+\[,\s*entered,\s*exit\]\s*=\s*parseBeatRange/);
-  assert.match(source, /getBoundingClientRect\(\)\.top\s*\+\s*window\.scrollY/);
+  assert.match(source, /const\s+visibleStart\s*=\s*reducedMotion\s*\?\s*0\s*:/);
+  assert.match(source, /const\s+visibleEnd\s*=\s*reducedMotion\s*\?\s*maximumScroll\s*:/);
+  assert.match(source, /function\s+getElementLayoutTop\(/);
+  assert.match(source, /current\.offsetTop/);
+  assert.match(source, /current\.offsetParent/);
+  assert.match(source, /calculateCenteredScrollTarget\(\s*getElementLayoutTop\(element\)/);
   assert.match(source, /element\.offsetHeight/);
+  assert.match(source, /keyboardBeatElements\.forEach\(\(element\)\s*=>\s*sizeObserver\?\.observe\(element\)\)/);
+  assert.match(source, /keyboardStaticElements\.forEach\(\(element\)\s*=>\s*sizeObserver\?\.observe\(element\)\)/);
+  assert.match(source, /handleMotionPreference[\s\S]{0,160}measureSections\(\)/);
+  assert.match(html, /class="skills-heading"[^>]*data-keyboard-stop/);
+  assert.match(html, /class="skills-groups"[\s\S]*?data-keyboard-stop/g);
   assert.match(
     source,
     /scrollTo\(\{[^}]*top[^}]*behavior:\s*reducedMotion\s*\?\s*"auto"\s*:\s*"smooth"/s,

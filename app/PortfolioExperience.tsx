@@ -155,7 +155,7 @@ export default function PortfolioExperience() {
         </nav>
       </header>
 
-      <main id="main-content" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight">
+      <main id="main-content" aria-keyshortcuts="ArrowUp ArrowDown">
         <section className="hero chapter" id="top" data-chapter="hero" data-keyboard-stop aria-labelledby="hero-title">
           <div className="hero-index" aria-hidden="true">01 — 05</div>
           <div className="hero-copy" data-reveal>
@@ -187,7 +187,7 @@ export default function PortfolioExperience() {
           </div>
           <p className="scroll-cue" id="keyboard-cue">
             <span className="scroll-cue__line" aria-hidden="true" />
-            <span className="scroll-cue__keyboard">Use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> arrow keys to explore</span>
+            <span className="scroll-cue__keyboard">Use <kbd>↑</kbd> <kbd>↓</kbd> arrow keys to explore</span>
             <span className="scroll-cue__touch">Swipe to explore</span>
           </p>
         </section>
@@ -382,12 +382,14 @@ export default function PortfolioExperience() {
           </div>
         </section>
 
-        <section className="skills-section" data-keyboard-stop aria-labelledby="skills-title">
-          <p className="eyebrow"><span /> Toolkit</p>
-          <h2 id="skills-title" data-reveal>How I work.</h2>
+        <section className="skills-section" aria-labelledby="skills-title">
+          <div className="skills-heading" data-keyboard-stop>
+            <p className="eyebrow"><span /> Toolkit</p>
+            <h2 id="skills-title" data-reveal>How I work.</h2>
+          </div>
           <div className="skills-groups">
             {skillGroups.map((group) => (
-              <div key={group.label} data-reveal>
+              <div key={group.label} data-keyboard-stop data-reveal>
                 <h3>{group.label}</h3>
                 <ul>{group.skills.map((skill) => <li key={skill}>{skill}</li>)}</ul>
               </div>

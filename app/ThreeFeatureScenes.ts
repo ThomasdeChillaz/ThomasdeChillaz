@@ -81,10 +81,10 @@ export function createBuildingScene(): FeatureSceneBundle {
     const coreMaterial = resources.track(new THREE.MeshPhysicalMaterial({
       color: 0x4fc7ed,
       emissive: 0x0b506a,
-      emissiveIntensity: 1.1,
-      roughness: 0.22,
-      metalness: 0.72,
-      clearcoat: 0.36,
+      emissiveIntensity: 0.42,
+      roughness: 0.58,
+      metalness: 0.5,
+      clearcoat: 0.12,
     }));
     const core = new THREE.Mesh(
       resources.track(new THREE.IcosahedronGeometry(0.52, 2)),
@@ -97,9 +97,9 @@ export function createBuildingScene(): FeatureSceneBundle {
     const detailMaterial = resources.track(new THREE.MeshStandardMaterial({
       color: 0xbbeeff,
       emissive: 0x154a62,
-      emissiveIntensity: 0.7,
-      roughness: 0.3,
-      metalness: 0.7,
+      emissiveIntensity: 0.22,
+      roughness: 0.52,
+      metalness: 0.58,
     }));
     const moduleTargets = [
       new THREE.Vector3(0, -1.38, 0),
@@ -121,10 +121,10 @@ export function createBuildingScene(): FeatureSceneBundle {
       const material = resources.track(new THREE.MeshPhysicalMaterial({
         color: index % 2 === 0 ? 0x173b52 : 0x1d304b,
         emissive: index % 2 === 0 ? 0x0c4962 : 0x142f56,
-        emissiveIntensity: 0.28,
-        roughness: 0.32,
-        metalness: 0.76,
-        clearcoat: 0.42,
+        emissiveIntensity: 0.14,
+        roughness: 0.62,
+        metalness: 0.56,
+        clearcoat: 0.1,
       }));
       const body = new THREE.Mesh(moduleGeometry, material);
       const upperDetail = new THREE.Mesh(detailGeometry, detailMaterial);
@@ -157,7 +157,7 @@ export function createBuildingScene(): FeatureSceneBundle {
     const key = new THREE.DirectionalLight(0xd1f5ff, 4.2);
     key.position.set(-3.5, 5, 5);
     scene.add(key);
-    const accent = new THREE.PointLight(0x2cbce8, 18, 12, 1.8);
+    const accent = new THREE.PointLight(0x2cbce8, 9, 12, 1.8);
     accent.position.set(3, -1.5, 3.2);
     scene.add(accent);
 
@@ -176,14 +176,14 @@ export function createBuildingScene(): FeatureSceneBundle {
             (1 - assembled) * 0.32,
           );
           group.scale.setScalar(0.18 + assembled * 0.82);
-          moduleMaterials[index].emissiveIntensity = 0.28 + focused * 1.5;
+          moduleMaterials[index].emissiveIntensity = 0.14 + focused * 0.62;
         });
         const completion = smooth((progress - 0.3) / 0.5);
         connectorMaterial.opacity = reducedTransparency ? 0 : completion * 0.42;
         backdropMaterial.opacity = reducedTransparency ? 0 : 0.3;
         core.rotation.set(progress * 0.42, progress * 1.15, -progress * 0.18);
         core.scale.setScalar(0.76 + completion * 0.24);
-        coreMaterial.emissiveIntensity = 0.8 + completion * 1.1;
+        coreMaterial.emissiveIntensity = 0.32 + completion * 0.46;
         root.position.set(wide ? 2.25 - progress * 0.48 : 0.22, -0.04, 0);
         root.rotation.set(-0.08, -0.34 + progress * 0.5, -0.03);
         root.scale.setScalar(wide ? 0.94 : 0.76);
@@ -210,10 +210,10 @@ export function createReachScene(): FeatureSceneBundle {
     const sourceMaterial = resources.track(new THREE.MeshPhysicalMaterial({
       color: 0xff8e68,
       emissive: 0x762516,
-      emissiveIntensity: 1.6,
-      roughness: 0.25,
-      metalness: 0.52,
-      clearcoat: 0.48,
+      emissiveIntensity: 0.55,
+      roughness: 0.56,
+      metalness: 0.26,
+      clearcoat: 0.12,
     }));
     const source = new THREE.Mesh(
       resources.track(new THREE.IcosahedronGeometry(0.56, 2)),
@@ -230,9 +230,9 @@ export function createReachScene(): FeatureSceneBundle {
     const hubMaterial = resources.track(new THREE.MeshStandardMaterial({
       color: 0xffd7c5,
       emissive: 0x7d3526,
-      emissiveIntensity: 1.1,
-      roughness: 0.4,
-      metalness: 0.42,
+      emissiveIntensity: 0.42,
+      roughness: 0.58,
+      metalness: 0.2,
     }));
     const hubs = hubDirections.map(() => {
       const hub = new THREE.Mesh(hubGeometry, hubMaterial);
@@ -245,9 +245,9 @@ export function createReachScene(): FeatureSceneBundle {
     const nodeMaterial = resources.track(new THREE.MeshStandardMaterial({
       color: 0xffb08d,
       emissive: 0x6d2116,
-      emissiveIntensity: 1,
-      roughness: 0.48,
-      metalness: 0.3,
+      emissiveIntensity: 0.35,
+      roughness: 0.62,
+      metalness: 0.12,
     }));
     const nodes = resources.track(new THREE.InstancedMesh(nodeGeometry, nodeMaterial, nodeCount));
     nodes.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -279,7 +279,7 @@ export function createReachScene(): FeatureSceneBundle {
     const key = new THREE.DirectionalLight(0xffe1d2, 4.4);
     key.position.set(-4, 4, 5);
     scene.add(key);
-    const coral = new THREE.PointLight(0xff6c48, 20, 14, 1.8);
+    const coral = new THREE.PointLight(0xff6c48, 10, 14, 1.8);
     coral.position.set(3, -2, 3.5);
     scene.add(coral);
 
@@ -324,7 +324,7 @@ export function createReachScene(): FeatureSceneBundle {
         if (!reducedTransparency) lineAttribute.needsUpdate = true;
         lineMaterial.opacity = reducedTransparency ? 0 : spread * (1 - story * 0.62) * 0.28;
         backdropMaterial.opacity = reducedTransparency ? 0 : 0.3;
-        nodeMaterial.emissiveIntensity = 0.8 + spread * 0.8;
+        nodeMaterial.emissiveIntensity = 0.28 + spread * 0.34;
         source.rotation.set(progress * 0.38, progress * 1.05, -progress * 0.2);
         source.scale.setScalar(1.08 - spread * 0.2);
         root.position.set(

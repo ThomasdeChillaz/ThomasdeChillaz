@@ -30,28 +30,28 @@ export function createSatellite(resources: SatelliteResourceTracker): Satellite 
   const busMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     color: 0xd8c3a0,
     emissive: 0x21160a,
-    emissiveIntensity: 0.36,
-    roughness: 0.28,
-    metalness: 0.82,
-    clearcoat: 0.42,
+    emissiveIntensity: 0.12,
+    roughness: 0.58,
+    metalness: 0.68,
+    clearcoat: 0.12,
   }));
   const darkMetal = resources.track(new THREE.MeshStandardMaterial({
     color: 0x1a222a,
-    roughness: 0.34,
-    metalness: 0.88,
+    roughness: 0.5,
+    metalness: 0.76,
   }));
   const panelMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     color: 0x102d52,
     emissive: 0x071b36,
-    emissiveIntensity: 0.72,
-    roughness: 0.22,
-    metalness: 0.56,
-    clearcoat: 0.64,
+    emissiveIntensity: 0.24,
+    roughness: 0.4,
+    metalness: 0.38,
+    clearcoat: 0.22,
   }));
   const dishMaterial = resources.track(new THREE.MeshStandardMaterial({
     color: 0xe8edf1,
-    roughness: 0.24,
-    metalness: 0.74,
+    roughness: 0.48,
+    metalness: 0.62,
     side: THREE.DoubleSide,
   }));
 
@@ -105,8 +105,8 @@ export function createSatellite(resources: SatelliteResourceTracker): Satellite 
     resources.track(new THREE.MeshStandardMaterial({
       color: 0xffb15c,
       emissive: 0xff6a27,
-      emissiveIntensity: 1.7,
-      roughness: 0.3,
+      emissiveIntensity: 0.72,
+      roughness: 0.46,
     })),
   );
   sensor.position.set(0.16, 0.16, 0.25);

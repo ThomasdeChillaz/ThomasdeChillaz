@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SceneCanvas, type Chapter } from "./ScrollScenes";
 
 const CHAPTERS: ReadonlyArray<{ id: Chapter; label: string; number: string }> = [
@@ -10,9 +10,6 @@ const CHAPTERS: ReadonlyArray<{ id: Chapter; label: string; number: string }> = 
   { id: "building", label: "Build", number: "04" },
   { id: "impact", label: "Reach", number: "05" },
 ];
-function isChapter(value: string | undefined): value is Chapter {
-  return value === "hero" || CHAPTERS.some((chapter) => chapter.id === value);
-}
 const skillGroups = [
   {
     label: "Research computing",
@@ -77,29 +74,16 @@ export default function PortfolioExperience() {
   const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const progressFillRef = useRef<HTMLSpanElement>(null);
+  const handleChapterChange = useCallback((nextChapter: Chapter) => {
+    setChapter((currentChapter) => currentChapter === nextChapter ? currentChapter : nextChapter);
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
-    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
     const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
-    let observer: IntersectionObserver | null = null;
     let revealObserver: IntersectionObserver | null = null;
 
     try {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-          if (visible && visible.target instanceof HTMLElement) {
-            const nextChapter = visible.target.dataset.chapter;
-            if (isChapter(nextChapter)) setChapter(nextChapter);
-          }
-        },
-        { rootMargin: "-25% 0px -45%", threshold: [0, 0.2, 0.45, 0.7] },
-      );
-      sections.forEach((section) => observer?.observe(section));
-
       revealObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -142,7 +126,6 @@ export default function PortfolioExperience() {
     window.addEventListener("resize", onScroll);
     return () => {
       if (progressFrame !== 0) cancelAnimationFrame(progressFrame);
-      observer?.disconnect();
       revealObserver?.disconnect();
       sizeObserver?.disconnect();
       window.removeEventListener("scroll", onScroll);
@@ -154,7 +137,7 @@ export default function PortfolioExperience() {
   return (
     <div ref={rootRef} className="portfolio" data-theme={chapter}>
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <SceneCanvas chapter={chapter} />
+      <SceneCanvas onChapterChange={handleChapterChange} />
       <div ref={progressRef} className="scroll-progress" role="progressbar" aria-label="Scroll progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
         <span ref={progressFillRef} />
       </div>

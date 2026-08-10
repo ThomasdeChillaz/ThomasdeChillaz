@@ -162,18 +162,18 @@ export function createDnaScene(): SceneBundle {
     resources.track(new THREE.MeshPhysicalMaterial({
       color: 0x2ad6e6,
       emissive: 0x063d45,
-      emissiveIntensity: 1.2,
-      roughness: 0.24,
-      metalness: 0.64,
-      clearcoat: 0.75,
+      emissiveIntensity: 0.46,
+      roughness: 0.48,
+      metalness: 0.12,
+      clearcoat: 0.18,
     })),
     resources.track(new THREE.MeshPhysicalMaterial({
       color: 0xff814d,
       emissive: 0x49150a,
-      emissiveIntensity: 1.15,
-      roughness: 0.28,
-      metalness: 0.58,
-      clearcoat: 0.7,
+      emissiveIntensity: 0.42,
+      roughness: 0.5,
+      metalness: 0.1,
+      clearcoat: 0.16,
     })),
   ] as const;
 
@@ -189,9 +189,9 @@ export function createDnaScene(): SceneBundle {
   const pairMaterial = resources.track(new THREE.MeshStandardMaterial({
     color: 0xc8e2e3,
     emissive: 0x173a3d,
-    emissiveIntensity: 0.75,
-    roughness: 0.34,
-    metalness: 0.52,
+    emissiveIntensity: 0.28,
+    roughness: 0.52,
+    metalness: 0.14,
   }));
   const pairs = resources.track(new THREE.InstancedMesh(pairGeometry, pairMaterial, pairCount));
   const nodeGeometry = resources.track(new THREE.SphereGeometry(0.105, 16, 12));
@@ -234,7 +234,7 @@ export function createDnaScene(): SceneBundle {
   const cyanKey = new THREE.DirectionalLight(0x8af8ff, 4.2);
   cyanKey.position.set(-4, 5, 5);
   scene.add(cyanKey);
-  const amberRim = new THREE.PointLight(0xff6638, 34, 14, 1.6);
+  const amberRim = new THREE.PointLight(0xff6638, 14, 14, 1.6);
   amberRim.position.set(3.5, -1.2, 3.8);
   scene.add(amberRim);
 
@@ -332,7 +332,7 @@ export function createPlanetScene(): SceneBundle {
     clearcoat: 0.06,
     clearcoatRoughness: 0.84,
     emissive: 0x10040a,
-    emissiveIntensity: 0.18,
+    emissiveIntensity: 0.05,
   }));
   const planet = new THREE.Mesh(planetGeometry, planetMaterial);
   planetAssembly.add(planet);
@@ -340,7 +340,7 @@ export function createPlanetScene(): SceneBundle {
   const atmosphereMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     color: 0xff906b,
     emissive: 0x541526,
-    emissiveIntensity: 1.1,
+    emissiveIntensity: 0.55,
     transparent: true,
     opacity: 0.11,
     roughness: 0.12,
@@ -366,7 +366,7 @@ export function createPlanetScene(): SceneBundle {
   const sun = new THREE.DirectionalLight(0xffe1b0, 5.4);
   sun.position.set(-4.5, 4.2, 5.4);
   scene.add(sun);
-  const horizonFill = new THREE.PointLight(0xc35d51, 11, 12, 1.8);
+  const horizonFill = new THREE.PointLight(0xc35d51, 6, 12, 1.8);
   horizonFill.position.set(3, -2.4, 1.4);
   scene.add(horizonFill);
 
@@ -381,7 +381,7 @@ export function createPlanetScene(): SceneBundle {
         sampleTrack(progress, PLANET_Y_TRACK),
         0,
       );
-      planet.rotation.set(0.08 + progress * 0.28, -0.7 + progress * 2.15, -0.06);
+      planet.rotation.set(0.08 + progress * 0.28, -0.7 + progress * 1.05, -0.06);
       planetAssembly.rotation.z = sampleTrack(progress, PLANET_ROTATION_Z_TRACK);
       const moonAngle = progress * Math.PI * 1.5 + 0.6;
       moon.position.set(Math.cos(moonAngle) * 3.2, Math.sin(moonAngle) * 1.1, Math.sin(moonAngle) * 1.7);
@@ -412,9 +412,9 @@ function createEducationScene(): SceneBundle {
   const nodeMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     color: 0x55deef,
     emissive: 0x0b4e59,
-    emissiveIntensity: 1.2,
-    roughness: 0.24,
-    metalness: 0.6,
+    emissiveIntensity: 0.42,
+    roughness: 0.5,
+    metalness: 0.22,
   }));
   const linePositions: number[] = [];
   for (let index = 0; index < 9; index += 1) {
@@ -433,7 +433,7 @@ function createEducationScene(): SceneBundle {
   const lineMaterial = resources.track(new THREE.LineBasicMaterial({ color: 0x4ccbd8, transparent: true, opacity: 0.45 }));
   root.add(new THREE.LineSegments(lineGeometry, lineMaterial));
   scene.add(new THREE.HemisphereLight(0x8cecff, 0x061019, 2.1));
-  const key = new THREE.PointLight(0x55deef, 22, 12);
+  const key = new THREE.PointLight(0x55deef, 11, 12);
   key.position.set(2, 1, 3);
   scene.add(key);
 
@@ -510,7 +510,7 @@ export function createThreeStage(canvas: HTMLCanvasElement): ThreeStage {
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.05;
 
     return {
       renderer,
@@ -543,8 +543,13 @@ function getOrCreateScene(stage: ThreeStage, chapter: ThreeChapter) {
   return bundle;
 }
 
+export function prewarmThreeScene(stage: ThreeStage, chapter: ThreeChapter) {
+  getOrCreateScene(stage, chapter);
+}
+
 type MaterialState = Readonly<{
-  opacity: number;
+  baseOpacity: number;
+  appliedOpacity: number;
   transparent: boolean;
   depthWrite: boolean;
 }>;
@@ -566,25 +571,46 @@ function getSceneMaterials(scene: THREE.Scene) {
   return result;
 }
 
+function restoreSceneOpacity(scene: THREE.Scene) {
+  getSceneMaterials(scene).forEach((material) => {
+    const state = materialStates.get(material);
+    if (!state) return;
+    material.opacity = state.baseOpacity;
+    materialStates.set(material, {
+      ...state,
+      appliedOpacity: state.baseOpacity,
+    });
+  });
+}
+
 function setSceneOpacity(scene: THREE.Scene, opacity: number) {
   const faded = opacity < 0.999;
   getSceneMaterials(scene).forEach((material) => {
     let initial = materialStates.get(material);
     if (!initial) {
       initial = {
-        opacity: material.opacity,
+        baseOpacity: material.opacity,
+        appliedOpacity: material.opacity,
         transparent: material.transparent,
         depthWrite: material.depthWrite,
       };
-      materialStates.set(material, initial);
     }
+    const baseOpacity = Math.abs(material.opacity - initial.appliedOpacity) > 0.000001
+      ? material.opacity
+      : initial.baseOpacity;
+    const appliedOpacity = baseOpacity * opacity;
     const transparent = faded || initial.transparent;
     if (material.transparent !== transparent) {
       material.transparent = transparent;
       material.needsUpdate = true;
     }
-    material.opacity = initial.opacity * opacity;
+    material.opacity = appliedOpacity;
     material.depthWrite = faded ? false : initial.depthWrite;
+    materialStates.set(material, {
+      ...initial,
+      baseOpacity,
+      appliedOpacity,
+    });
   });
 }
 
@@ -594,45 +620,53 @@ function setHandoffCamera(camera: THREE.PerspectiveCamera, width: number, height
   camera.lookAt(wide ? 0.5 : 0, 0, 0);
 }
 
-function updateSpaceEducationTransition(
+function updateChapterTransition(
   stage: ThreeStage,
-  chapter: ThreeChapter,
-  progress: number,
+  fromChapter: ThreeChapter,
+  fromProgress: number,
+  toChapter: ThreeChapter,
+  toProgress: number,
   width: number,
   height: number,
   transition: number,
   reducedTransparency: boolean,
 ) {
   const blend = smooth(transition);
-  const space = getOrCreateScene(stage, "space");
-  const education = getOrCreateScene(stage, "education");
+  const from = getOrCreateScene(stage, fromChapter);
   const renderer = stage.renderer;
+  const sharedSatelliteHandoff = fromChapter === "space" && toChapter === "education";
 
-  if (blend <= 0.001) {
-    setSceneOpacity(space.scene, 1);
-    space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera, reducedTransparency);
-    renderer.render(space.scene, stage.camera);
+  if (fromChapter === toChapter || blend <= 0.001) {
+    setSceneOpacity(from.scene, 1);
+    from.update(clamp(fromProgress), width, height, stage.camera, reducedTransparency);
+    renderer.render(from.scene, stage.camera);
     return;
   }
+  const to = getOrCreateScene(stage, toChapter);
   if (blend >= 0.999) {
-    setSceneOpacity(education.scene, 1);
-    education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera, reducedTransparency);
-    renderer.render(education.scene, stage.camera);
+    setSceneOpacity(to.scene, 1);
+    to.update(clamp(toProgress), width, height, stage.camera, reducedTransparency);
+    renderer.render(to.scene, stage.camera);
     return;
   }
 
-  renderer.autoClear = false;
-  renderer.clear(true, true, true);
-  space.update(chapter === "space" ? clamp(progress) : 1, width, height, stage.camera, reducedTransparency);
-  setHandoffCamera(stage.camera, width, height);
-  setSceneOpacity(space.scene, 1 - blend);
-  renderer.render(space.scene, stage.camera);
-  renderer.clearDepth();
-  education.update(chapter === "education" ? clamp(progress) : 0, width, height, stage.camera, reducedTransparency);
-  setHandoffCamera(stage.camera, width, height);
-  setSceneOpacity(education.scene, blend);
-  renderer.render(education.scene, stage.camera);
-  renderer.autoClear = true;
+  try {
+    renderer.autoClear = false;
+    renderer.clear(true, true, true);
+    restoreSceneOpacity(from.scene);
+    from.update(clamp(fromProgress), width, height, stage.camera, reducedTransparency);
+    if (sharedSatelliteHandoff) setHandoffCamera(stage.camera, width, height);
+    setSceneOpacity(from.scene, 1 - blend);
+    renderer.render(from.scene, stage.camera);
+    renderer.clearDepth();
+    restoreSceneOpacity(to.scene);
+    to.update(clamp(toProgress), width, height, stage.camera, reducedTransparency);
+    if (sharedSatelliteHandoff) setHandoffCamera(stage.camera, width, height);
+    setSceneOpacity(to.scene, blend);
+    renderer.render(to.scene, stage.camera);
+  } finally {
+    renderer.autoClear = true;
+  }
 }
 
 function resizeStage(stage: ThreeStage, width: number, height: number) {
@@ -650,29 +684,27 @@ function resizeStage(stage: ThreeStage, width: number, height: number) {
 
 export function updateThreeScene(
   stage: ThreeStage,
-  chapter: ThreeChapter,
-  progress: number,
+  fromChapter: ThreeChapter,
+  fromProgress: number,
+  toChapter: ThreeChapter,
+  toProgress: number,
   width: number,
   height: number,
-  spaceEducationTransition: number,
+  transition: number,
   reducedTransparency: boolean,
 ) {
   resizeStage(stage, width, height);
-  if (chapter === "space" || chapter === "education") {
-    updateSpaceEducationTransition(
-      stage,
-      chapter,
-      progress,
-      width,
-      height,
-      spaceEducationTransition,
-      reducedTransparency,
-    );
-    return;
-  }
-  const bundle = getOrCreateScene(stage, chapter);
-  bundle.update(clamp(progress), width, height, stage.camera, reducedTransparency);
-  stage.renderer.render(bundle.scene, stage.camera);
+  updateChapterTransition(
+    stage,
+    fromChapter,
+    fromProgress,
+    toChapter,
+    toProgress,
+    width,
+    height,
+    transition,
+    reducedTransparency,
+  );
 }
 
 export function disposeThreeStage(stage: ThreeStage) {

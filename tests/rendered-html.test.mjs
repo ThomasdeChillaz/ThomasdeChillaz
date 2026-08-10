@@ -117,7 +117,8 @@ test("removes manual motion controls and persistence", async () => {
   assert.doesNotMatch(css, /data-motion="paused"/);
   assert.doesNotMatch(`${source}\n${scenes}\n${css}`, /\binfinite\b/);
   assert.doesNotMatch(scenes, /performance\.now|animationStart|setInterval/);
-  assert.match(scenes, /Math\.abs\(targetProgress - displayedProgress\)/);
+  assert.doesNotMatch(scenes, /targetProgress|displayedProgress/);
+  assert.match(scenes, /calculateSceneState\(\s*window\.scrollY/);
 });
 
 test("gives health a dedicated DNA scene and professional reveal system", async () => {
@@ -340,13 +341,20 @@ test("uses distinct scroll-directed 3D systems for Build and Reach", async () =>
 });
 
 test("blends every adjacent chapter boundary with one reversible scroll function", async () => {
-  const { calculateBoundaryTransition } = await import("../app/scrollMath.mjs");
+  const { calculateBoundaryTransition, calculateSceneState } = await import("../app/scrollMath.mjs");
   const {
     calculateEducationRelayStart,
     calculateSatelliteSpaceEndpoint,
   } = await import("../app/satelliteMath.mjs");
   const viewportHeight = 1000;
   const boundaryTops = [2000, 5000, 8000, 11000, 14000];
+  const chapters = ["hero", "health", "space", "education", "building", "impact"];
+  const metrics = chapters.map((chapter, index) => ({
+    chapter,
+    top: index === 0 ? 0 : boundaryTops[index - 1],
+    height: index === 0 ? 2000 : 3000,
+  }));
+  assert.equal(calculateSceneState(0, [], viewportHeight), null);
   boundaryTops.forEach((nextTop) => {
     const positions = [nextTop - 900, nextTop - 490, nextTop - 100];
     const forward = positions.map((scrollY) =>
@@ -363,6 +371,18 @@ test("blends every adjacent chapter boundary with one reversible scroll function
     dense.slice(1).forEach((value, index) => {
       assert.ok(value >= dense[index]);
       assert.ok(value - dense[index] < 0.03);
+    });
+    const boundaryIndex = boundaryTops.indexOf(nextTop);
+    const forwardStates = positions.map((scrollY) =>
+      calculateSceneState(scrollY, metrics, viewportHeight),
+    );
+    const reverseStates = positions.toReversed().map((scrollY) =>
+      calculateSceneState(scrollY, metrics, viewportHeight),
+    );
+    assert.deepEqual(reverseStates, forwardStates.toReversed());
+    forwardStates.slice(0, 2).forEach((state) => {
+      assert.equal(state.fromChapter, chapters[boundaryIndex]);
+      assert.equal(state.toChapter, chapters[boundaryIndex + 1]);
     });
   });
   for (const wide of [true, false]) {
@@ -390,6 +410,9 @@ test("blends every adjacent chapter boundary with one reversible scroll function
   assert.match(threeSource, /getOrCreateScene\(stage,\s*toChapter\)/);
   assert.match(threeSource, /setSceneOpacity\(from\.scene,\s*1 - blend\)/);
   assert.match(threeSource, /setSceneOpacity\(to\.scene,\s*blend\)/);
+  assert.match(threeSource, /baseOpacity/);
+  assert.match(threeSource, /appliedOpacity/);
+  assert.doesNotMatch(threeSource, /initial\.opacity\s*\*\s*opacity/);
   assert.doesNotMatch(threeSource, /updateSpaceEducationTransition|chapter === "space" \|\| chapter === "education"/);
   assert.doesNotMatch(threeSource, /requestAnimationFrame|performance\.now|setInterval/);
   assert.doesNotMatch(threeSource, /setAnimationLoop\((?!null)/);

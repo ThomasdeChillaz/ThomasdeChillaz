@@ -1,24 +1,12 @@
 import * as THREE from "three";
 import { createSatellite, updateEducationRelay, updateSatellite } from "./ThreeSatellite";
+import { createBuildingScene, createReachScene } from "./ThreeFeatureScenes";
+import { getDnaPresentation } from "./dnaPresentation.mjs";
 import { satelliteSpaceSystemEnd } from "./satelliteMath.mjs";
 
 export type ThreeChapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
 type TrackPoint = readonly [progress: number, value: number];
-
-const DNA_SCALE_TRACK = [
-  [0, 2.35], [0.14, 2.35], [0.22, 1.68], [0.34, 1.68],
-  [0.44, 1.25], [0.56, 1.25], [0.66, 0.92], [1, 0.78],
-] as const;
-const DNA_X_WIDE_TRACK = [
-  [0, 3.35], [0.14, 3.35], [0.22, 2.75], [0.44, 2.25], [0.66, 1.65], [1, 1.3],
-] as const;
-const DNA_X_NARROW_TRACK = [
-  [0, 1.35], [0.14, 1.35], [0.22, 1.05], [0.44, 0.72], [0.66, 0.35], [1, 0.1],
-] as const;
-const DNA_Y_TRACK = [[0, 0.85], [0.22, 0.5], [0.44, 0.16], [0.66, -0.14], [1, -0.36]] as const;
-const DNA_ROTATION_Y_TRACK = [[0, -0.45], [0.34, 0.06], [0.66, 0.48], [1, 0.76]] as const;
-const DNA_ROTATION_Z_TRACK = [[0, -0.16], [0.44, -0.36], [1, -0.57]] as const;
 
 const PLANET_SCALE_TRACK = [
   [0, 2.18], [0.15, 2.18], [0.25, 1.36], [0.45, 1.36],
@@ -253,20 +241,16 @@ export function createDnaScene(): SceneBundle {
     scene,
     update(progress, width, height, camera) {
       const wide = width / Math.max(height, 1) > 1.15;
-      const scale = sampleTrack(progress, DNA_SCALE_TRACK);
-      root.scale.setScalar(scale);
-      root.position.set(
-        sampleTrack(progress, wide ? DNA_X_WIDE_TRACK : DNA_X_NARROW_TRACK),
-        sampleTrack(progress, DNA_Y_TRACK),
-        0,
-      );
+      const pose = getDnaPresentation(progress, wide);
+      root.scale.setScalar(pose.scale);
+      root.position.set(pose.x, pose.y, 0);
       root.rotation.set(
-        0.18 + progress * 0.22,
-        sampleTrack(progress, DNA_ROTATION_Y_TRACK),
-        sampleTrack(progress, DNA_ROTATION_Z_TRACK),
+        pose.rotationX,
+        pose.rotationY,
+        pose.rotationZ,
       );
-      camera.position.set(0, 0, wide ? 7.2 : 8.7);
-      camera.lookAt(wide ? 0.5 : 0, 0, 0);
+      camera.position.set(0, 0, pose.cameraZ);
+      camera.lookAt(pose.lookX, 0, 0);
     },
   };
   } catch (error) {
@@ -276,30 +260,59 @@ export function createDnaScene(): SceneBundle {
   }
 }
 
-function colorPlanetGeometry(geometry: THREE.SphereGeometry) {
-  const position = geometry.getAttribute("position");
-  const colors = new Float32Array(position.count * 3);
-  const shadow = new THREE.Color(0x3b0e28);
-  const rust = new THREE.Color(0xc5482f);
-  const sand = new THREE.Color(0xffbd6b);
+export function createPlanetScene(): SceneBundle {
+  function deformPlanetSurface(geometry: THREE.SphereGeometry) {
+    const position = geometry.getAttribute("position");
+    const colors = new Float32Array(position.count * 3);
+    const normal = new THREE.Vector3();
+    const color = new THREE.Color();
+    const shadow = new THREE.Color(0x241520);
+    const mineral = new THREE.Color(0x934b3b);
+    const highland = new THREE.Color(0xd99762);
+    const craterCenters = Array.from({ length: 11 }, (_, index) => {
+      const latitude = (seededValue(index, 18) - 0.5) * Math.PI * 0.88;
+      const longitude = seededValue(index, 19) * Math.PI * 2;
+      return new THREE.Vector3(
+        Math.cos(latitude) * Math.cos(longitude),
+        Math.sin(latitude),
+        Math.cos(latitude) * Math.sin(longitude),
+      ).normalize();
+    });
 
-  for (let index = 0; index < position.count; index += 1) {
-    const x = position.getX(index);
-    const y = position.getY(index);
-    const z = position.getZ(index);
-    const terrain = clamp(0.5 + Math.sin(x * 4.7 + z * 1.8) * 0.2 + Math.cos(y * 9.1 - z * 2.4) * 0.19);
-    const color = terrain > 0.61
-      ? rust.clone().lerp(sand, (terrain - 0.61) / 0.39)
-      : shadow.clone().lerp(rust, terrain / 0.61);
-    colors[index * 3] = color.r;
-    colors[index * 3 + 1] = color.g;
-    colors[index * 3 + 2] = color.b;
+    for (let index = 0; index < position.count; index += 1) {
+      normal.set(position.getX(index), position.getY(index), position.getZ(index)).normalize();
+      const broad = Math.sin(normal.x * 5.4 + normal.z * 2.3) * 0.022;
+      const fine = Math.cos(normal.y * 14.7 - normal.z * 6.1) * 0.011;
+      let displacement = broad + fine;
+
+      craterCenters.forEach((center, craterIndex) => {
+        const angularDistance = Math.acos(THREE.MathUtils.clamp(normal.dot(center), -1, 1));
+        const radius = 0.09 + seededValue(craterIndex, 20) * 0.075;
+        const normalized = angularDistance / radius;
+        const basin = Math.exp(-normalized * normalized * 2.8) * -0.045;
+        const rim = Math.exp(-((normalized - 1) ** 2) * 18) * 0.014;
+        displacement += basin + rim;
+      });
+
+      const surfaceRadius = 1.58 + displacement;
+      position.setXYZ(
+        index,
+        normal.x * surfaceRadius,
+        normal.y * surfaceRadius,
+        normal.z * surfaceRadius,
+      );
+      const terrain = clamp(0.48 + broad * 8 + fine * 12 + displacement * 3.5);
+      if (terrain > 0.58) color.copy(mineral).lerp(highland, (terrain - 0.58) / 0.42);
+      else color.copy(shadow).lerp(mineral, terrain / 0.58);
+      colors[index * 3] = color.r;
+      colors[index * 3 + 1] = color.g;
+      colors[index * 3 + 2] = color.b;
+    }
+
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.computeVertexNormals();
   }
 
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-}
-
-export function createPlanetScene(): SceneBundle {
   const scene = createScene(0x080715, 0.052);
   const resources = new ResourceTracker();
   try {
@@ -310,74 +323,35 @@ export function createPlanetScene(): SceneBundle {
   scene.add(system);
 
   const planetGeometry = resources.track(new THREE.SphereGeometry(1.58, 72, 48));
-  colorPlanetGeometry(planetGeometry);
+  deformPlanetSurface(planetGeometry);
   const planetMaterial = resources.track(new THREE.MeshPhysicalMaterial({
     vertexColors: true,
-    roughness: 0.72,
-    metalness: 0.04,
-    clearcoat: 0.24,
-    clearcoatRoughness: 0.5,
-    emissive: 0x17030b,
-    emissiveIntensity: 0.35,
+    roughness: 0.91,
+    metalness: 0.01,
+    clearcoat: 0.06,
+    clearcoatRoughness: 0.84,
+    emissive: 0x10040a,
+    emissiveIntensity: 0.18,
   }));
   const planet = new THREE.Mesh(planetGeometry, planetMaterial);
   planetAssembly.add(planet);
 
+  const atmosphereMaterial = resources.track(new THREE.MeshPhysicalMaterial({
+    color: 0xff906b,
+    emissive: 0x541526,
+    emissiveIntensity: 1.1,
+    transparent: true,
+    opacity: 0.11,
+    roughness: 0.12,
+    metalness: 0,
+    side: THREE.BackSide,
+    depthWrite: false,
+  }));
   const atmosphere = new THREE.Mesh(
     resources.track(new THREE.SphereGeometry(1.68, 48, 32)),
-    resources.track(new THREE.MeshPhysicalMaterial({
-      color: 0xff7a50,
-      emissive: 0x5f1427,
-      emissiveIntensity: 1.4,
-      transparent: true,
-      opacity: 0.14,
-      roughness: 0.08,
-      metalness: 0,
-      side: THREE.BackSide,
-      depthWrite: false,
-    })),
+    atmosphereMaterial,
   );
   planetAssembly.add(atmosphere);
-
-  const craterCount = 18;
-  const craterGeometry = resources.track(new THREE.TorusGeometry(0.1, 0.018, 7, 22));
-  const craterMaterial = resources.track(new THREE.MeshStandardMaterial({ color: 0x260917, roughness: 0.94 }));
-  const craters = resources.track(new THREE.InstancedMesh(craterGeometry, craterMaterial, craterCount));
-  const transform = new THREE.Object3D();
-  const forward = new THREE.Vector3(0, 0, 1);
-  for (let index = 0; index < craterCount; index += 1) {
-    const latitude = (seededValue(index, 8) - 0.5) * Math.PI * 0.82;
-    const longitude = seededValue(index, 9) * Math.PI * 2;
-    const normal = new THREE.Vector3(
-      Math.cos(latitude) * Math.cos(longitude),
-      Math.sin(latitude),
-      Math.cos(latitude) * Math.sin(longitude),
-    );
-    transform.position.copy(normal).multiplyScalar(1.59);
-    transform.quaternion.setFromUnitVectors(forward, normal);
-    transform.scale.setScalar(0.65 + seededValue(index, 10) * 1.6);
-    transform.updateMatrix();
-    craters.setMatrixAt(index, transform.matrix);
-  }
-  craters.instanceMatrix.needsUpdate = true;
-  planetAssembly.add(craters);
-
-  const ring = new THREE.Mesh(
-    resources.track(new THREE.RingGeometry(2.04, 2.55, 128)),
-    resources.track(new THREE.MeshStandardMaterial({
-      color: 0xffc47c,
-      emissive: 0x3b160a,
-      emissiveIntensity: 0.8,
-      transparent: true,
-      opacity: 0.42,
-      roughness: 0.55,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    })),
-  );
-  ring.rotation.x = 1.22;
-  ring.rotation.z = -0.14;
-  planetAssembly.add(ring);
 
   const moon = new THREE.Mesh(
     resources.track(new THREE.SphereGeometry(0.15, 20, 14)),
@@ -386,31 +360,14 @@ export function createPlanetScene(): SceneBundle {
   system.add(moon);
   const satellite = createSatellite(resources);
   system.add(satellite);
-  const orbitPoints = Array.from({ length: 96 }, (_, index) => {
-    const angle = (index / 96) * Math.PI * 2;
-    return new THREE.Vector3(
-      Math.cos(angle) * 3.2,
-      0.22 + Math.sin(angle * 0.82) * 0.86,
-      Math.sin(angle) * 1.65,
-    );
-  });
-  const orbitGeometry = resources.track(new THREE.BufferGeometry());
-  orbitGeometry.setFromPoints(orbitPoints);
-  const orbitMaterial = resources.track(new THREE.LineBasicMaterial({
-    color: 0x87def5,
-    transparent: true,
-    opacity: 0.04,
-    depthWrite: false,
-  }));
-  system.add(new THREE.LineLoop(orbitGeometry, orbitMaterial));
 
   scene.add(new THREE.HemisphereLight(0x607db8, 0x10040c, 1.35));
   const sun = new THREE.DirectionalLight(0xffe1b0, 5.4);
   sun.position.set(-4.5, 4.2, 5.4);
   scene.add(sun);
-  const redBounce = new THREE.PointLight(0xff4f36, 28, 12, 1.8);
-  redBounce.position.set(3, -2.4, 2.2);
-  scene.add(redBounce);
+  const horizonFill = new THREE.PointLight(0xc35d51, 11, 12, 1.8);
+  horizonFill.position.set(3, -2.4, 1.4);
+  scene.add(horizonFill);
 
   return {
     scene,
@@ -428,9 +385,7 @@ export function createPlanetScene(): SceneBundle {
       const moonAngle = progress * Math.PI * 1.5 + 0.6;
       moon.position.set(Math.cos(moonAngle) * 3.2, Math.sin(moonAngle) * 1.1, Math.sin(moonAngle) * 1.7);
       updateSatellite(satellite, progress, reducedTransparency);
-      const orbitReveal = smooth((progress - 0.12) / 0.16);
-      const orbitQuiet = 1 - smooth((progress - 0.8) / 0.16);
-      orbitMaterial.opacity = reducedTransparency ? 0 : 0.035 + orbitReveal * orbitQuiet * 0.16;
+      atmosphereMaterial.opacity = reducedTransparency ? 0 : 0.11;
       camera.position.set(0, 0, wide ? 7.6 : 9.1);
       camera.lookAt(wide ? 0.55 : 0, 0, 0);
     },
@@ -500,9 +455,9 @@ function createEducationScene(): SceneBundle {
   }
 }
 
-function createSignalScene(warm: boolean): SceneBundle {
-  const color = warm ? 0xff835f : 0x67d8ff;
-  const scene = createScene(warm ? 0x150908 : 0x050e15, 0.06);
+function createAmbientScene(): SceneBundle {
+  const color = 0x67d8ff;
+  const scene = createScene(0x050e15, 0.06);
   const resources = new ResourceTracker();
   try {
   addStars(scene, resources, color, 240, 17);
@@ -530,7 +485,7 @@ function createSignalScene(warm: boolean): SceneBundle {
     update(progress, width, height, camera) {
       const wide = width / Math.max(height, 1) > 1.15;
       root.position.set(wide ? 2.2 - progress * 1.1 : 0.6 - progress * 0.3, -0.1, 0);
-      root.rotation.set(-0.16, -0.28 + progress * 0.72, warm ? 0.12 : -0.08);
+      root.rotation.set(-0.16, -0.28 + progress * 0.72, -0.08);
       root.scale.setScalar(1.12 - progress * 0.16);
       camera.position.set(0, 0, wide ? 7.6 : 9.2);
       camera.lookAt(0.35, 0, 0);
@@ -574,7 +529,9 @@ function createChapterScene(chapter: ThreeChapter) {
   if (chapter === "health") return createDnaScene();
   if (chapter === "space") return createPlanetScene();
   if (chapter === "education") return createEducationScene();
-  return createSignalScene(chapter === "impact");
+  if (chapter === "building") return createBuildingScene();
+  if (chapter === "impact") return createReachScene();
+  return createAmbientScene();
 }
 
 function getOrCreateScene(stage: ThreeStage, chapter: ThreeChapter) {

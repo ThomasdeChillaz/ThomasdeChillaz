@@ -6,6 +6,15 @@ import { calculateChapterProgress, calculateEducationTransition, ease, lerp } fr
 
 export type Chapter = "hero" | "health" | "space" | "education" | "building" | "impact";
 
+const REDUCED_MOTION_PROGRESS: Readonly<Record<Chapter, number>> = {
+  hero: 0.5,
+  health: 0.66,
+  space: 0.58,
+  education: 0.64,
+  building: 0.82,
+  impact: 0.64,
+};
+
 function getChapterProgress(chapter: Chapter) {
   const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
   if (!section) return 0;
@@ -127,7 +136,8 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     const transparencyMedia = window.matchMedia("(prefers-reduced-transparency: reduce)");
     let reducedMotion = media.matches;
     let reducedTransparency = transparencyMedia.matches;
-    let targetProgress = reducedMotion ? 0.64 : getChapterProgress(chapter);
+    const reducedMotionProgress = REDUCED_MOTION_PROGRESS[chapter];
+    let targetProgress = reducedMotion ? reducedMotionProgress : getChapterProgress(chapter);
     let displayedProgress = targetProgress;
     let frame = 0;
     const section = document.querySelector<HTMLElement>(`[data-chapter="${chapter}"]`);
@@ -181,7 +191,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     };
     const animate = () => {
       frame = 0;
-      targetProgress = reducedMotion ? 0.64 : readProgress();
+      targetProgress = reducedMotion ? reducedMotionProgress : readProgress();
       const delta = targetProgress - displayedProgress;
       displayedProgress = reducedMotion || Math.abs(delta) < 0.001
         ? targetProgress
@@ -201,7 +211,7 @@ export function SceneCanvas({ chapter }: { chapter: Chapter }) {
     };
     const handleMotionPreference = (event: MediaQueryListEvent) => {
       reducedMotion = event.matches;
-      displayedProgress = reducedMotion ? 0.64 : readProgress();
+      displayedProgress = reducedMotion ? reducedMotionProgress : readProgress();
       schedule(true);
     };
     const handleTransparencyPreference = (event: MediaQueryListEvent) => {

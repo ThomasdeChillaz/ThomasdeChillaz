@@ -168,7 +168,9 @@ test("synchronizes story text and scene cameras to one chapter progress", async 
   });
   assert.match(sceneSource, /function getChapterProgress/);
   assert.match(sceneSource, /addEventListener\("scroll"/);
-  assert.match(sceneSource, /reducedMotion\s*\?\s*[\d.]+\s*:\s*getChapterProgress/);
+  assert.match(sceneSource, /reducedMotion\s*\?\s*reducedMotionProgress\s*:\s*getChapterProgress/);
+  assert.match(sceneSource, /building:\s*0\.82/);
+  assert.match(sceneSource, /impact:\s*0\.64/);
   assert.doesNotMatch(css, /(?:animation|view|scroll)-timeline|@keyframes\s+scroll-copy/i);
   assert.match(sceneSource, /function updateStoryBeats\([^)]*progress[^)]*reducedMotion[^)]*\)/);
   assert.match(sceneSource, /updateThreeScene\([^;]*displayedProgress[^;]*\)/s);
@@ -251,7 +253,7 @@ test("keeps the DNA helix framed throughout the health story", async () => {
   const threeSource = await readFile(new URL("../app/ThreeScenes.ts", import.meta.url), "utf8");
   const dnaSource = threeSource.slice(
     threeSource.indexOf("export function createDnaScene"),
-    threeSource.indexOf("function colorPlanetGeometry"),
+    threeSource.indexOf("export function createPlanetScene"),
   );
   assert.match(dnaSource, /getDnaPresentation\(progress,\s*wide\)/);
 });
@@ -340,7 +342,7 @@ test("transitions reversibly from space into education using scroll only", async
     /reducedMotion\s*\|\|\s*reducedTransparency\s*\?\s*Number\(chapter === "education"\)\s*:\s*readEducationTransition\(\)/,
   );
   assert.match(satelliteSource, /reducedTransparency\s*\?\s*0\s*:\s*scanIn/);
-  assert.match(threeSource, /reducedTransparency\s*\?\s*0\s*:\s*0\.035/);
+  assert.match(threeSource, /atmosphereMaterial\.opacity\s*=\s*reducedTransparency\s*\?\s*0\s*:\s*0\.11/);
   assert.match(
     scrollSource,
     /updateThreeScene\([^;]*displayedProgress[^;]*spaceEducationTransition[^;]*\)/s,

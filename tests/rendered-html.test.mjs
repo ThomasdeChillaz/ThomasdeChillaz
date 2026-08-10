@@ -239,16 +239,16 @@ test("navigates only eligible arrow-key story beats", async () => {
     targetIndex: 2,
   });
   assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowRight" }, 1, 4), {
-    handled: true,
-    targetIndex: 2,
+    handled: false,
+    targetIndex: null,
   });
   assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowUp" }, 2, 4), {
     handled: true,
     targetIndex: 1,
   });
   assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowLeft" }, 2, 4), {
-    handled: true,
-    targetIndex: 1,
+    handled: false,
+    targetIndex: null,
   });
   assert.deepEqual(resolveBeatNavigation({ ...plain, key: "ArrowDown", repeat: true }, 1, 4), {
     handled: true,
@@ -291,6 +291,7 @@ test("navigates only eligible arrow-key story beats", async () => {
 
 test("scrolls keyboard beats through the synchronized chapter timeline", async () => {
   const {
+    calculateCenteredScrollTarget,
     calculateChapterProgress,
     calculateScrollYForChapterProgress,
   } = await import("../app/scrollMath.mjs");
@@ -311,6 +312,10 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
     );
   }
 
+  assert.equal(calculateCenteredScrollTarget(1600, 400, 1000, 900, 1700), 1300);
+  assert.equal(calculateCenteredScrollTarget(1000, 200, 1000, 700, 1200), 700);
+  assert.equal(calculateCenteredScrollTarget(2400, 200, 1000, 900, 1500), 1500);
+
   const response = await render();
   const [html, source, css] = await Promise.all([
     response.text(),
@@ -323,6 +328,10 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
   assert.match(source, /isContentEditable/);
   assert.match(source, /closest<HTMLElement>\("input, textarea, select/);
   assert.match(source, /calculateScrollYForChapterProgress\(/);
+  assert.match(source, /calculateCenteredScrollTarget\(/);
+  assert.match(source, /const\s+\[,\s*entered,\s*exit\]\s*=\s*parseBeatRange/);
+  assert.match(source, /getBoundingClientRect\(\)\.top\s*\+\s*window\.scrollY/);
+  assert.match(source, /element\.offsetHeight/);
   assert.match(
     source,
     /scrollTo\(\{[^}]*top[^}]*behavior:\s*reducedMotion\s*\?\s*"auto"\s*:\s*"smooth"/s,
@@ -334,7 +343,13 @@ test("scrolls keyboard beats through the synchronized chapter timeline", async (
 
   const cue = html.match(/<p[^>]*class="scroll-cue"[^>]*>[\s\S]*?<\/p>/i)?.[0] ?? "";
   assert.match(cue, /arrow keys/i);
+  assert.match(cue, /↑/);
+  assert.match(cue, /↓/);
+  assert.doesNotMatch(cue, /←|→/);
   assert.doesNotMatch(cue, /scroll to enter/i);
+  assert.match(html, /aria-keyshortcuts="ArrowUp ArrowDown"/);
+  assert.doesNotMatch(html, /aria-keyshortcuts="[^"]*(?:ArrowLeft|ArrowRight)/);
+  assert.doesNotMatch(source, /ArrowLeft|ArrowRight/);
   const coarsePointer = extractCssBlock(
     css,
     "@media (hover: none) and (pointer: coarse) and (any-hover: none) and (any-pointer: coarse)",

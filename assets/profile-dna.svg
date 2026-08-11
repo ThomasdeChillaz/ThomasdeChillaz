@@ -1,197 +1,138 @@
-<svg width="1200" height="620" viewBox="0 0 1200 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Thomas de Chillaz - animated 3D DNA profile</title>
-  <desc id="desc">A compact animated GitHub profile card with a rotating DNA-inspired helix and key information about Thomas de Chillaz.</desc>
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Thomas de Chillaz - computational biology profile</title>
+  <desc id="desc">A compact static computational biology profile card with DNA, single-cell analysis, oncology, and healthcare data systems.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="620" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#05080D"/>
-      <stop offset="0.42" stop-color="#08131D"/>
-      <stop offset="1" stop-color="#101622"/>
+    <linearGradient id="background" x1="0" y1="0" x2="1200" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071017"/>
+      <stop offset="0.55" stop-color="#0B141B"/>
+      <stop offset="1" stop-color="#101417"/>
     </linearGradient>
-    <linearGradient id="redCyan" x1="80" y1="0" x2="1120" y2="0" gradientUnits="userSpaceOnUse">
+    <linearGradient id="dnaA" x1="410" y1="0" x2="920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4DB6AC"/>
+      <stop offset="1" stop-color="#A31F34"/>
+    </linearGradient>
+    <linearGradient id="dnaB" x1="410" y1="0" x2="920" y2="0" gradientUnits="userSpaceOnUse">
       <stop stop-color="#A31F34"/>
-      <stop offset="0.46" stop-color="#E25566"/>
-      <stop offset="1" stop-color="#5EEAD4"/>
+      <stop offset="1" stop-color="#7DD3C7"/>
     </linearGradient>
-    <linearGradient id="helixLine" x1="365" y1="0" x2="835" y2="0" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5EEAD4" stop-opacity="0.25"/>
-      <stop offset="0.5" stop-color="#F8FAFC" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#E25566" stop-opacity="0.25"/>
-    </linearGradient>
-    <radialGradient id="helixGlow" cx="0" cy="0" r="1" gradientTransform="translate(600 284) rotate(90) scale(245 430)">
-      <stop stop-color="#5EEAD4" stop-opacity="0.19"/>
-      <stop offset="0.46" stop-color="#E25566" stop-opacity="0.08"/>
-      <stop offset="1" stop-color="#05080D" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="6" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <clipPath id="clip">
-      <rect x="0" y="0" width="1200" height="620" rx="30"/>
+    <clipPath id="cardClip">
+      <rect width="1200" height="520" rx="24"/>
     </clipPath>
-    <style>
-      .grid { opacity: .12; }
-      .dash { stroke-dasharray: 8 15; animation: dash 8s linear infinite; }
-      .scan { animation: scan 5.2s ease-in-out infinite; }
-      .orbit { animation: orbit 15s linear infinite; transform-origin: 600px 290px; }
-      .orbitReverse { animation: orbit 19s linear reverse infinite; transform-origin: 600px 290px; }
-      .floatA { animation: floatA 7s ease-in-out infinite; }
-      .floatB { animation: floatB 8.5s ease-in-out -2s infinite; }
-      .twinkle { animation: twinkle 3.8s ease-in-out infinite; }
-      .twinkle2 { animation: twinkle 4.8s ease-in-out -1.4s infinite; }
-      .rung { animation: breathe 4.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-      .rung2 { animation: breathe 4.2s ease-in-out -1.4s infinite; transform-box: fill-box; transform-origin: center; }
-      .rung3 { animation: breathe 4.2s ease-in-out -2.8s infinite; transform-box: fill-box; transform-origin: center; }
-      @keyframes dash { to { stroke-dashoffset: -160; } }
-      @keyframes scan { 0%,100% { transform: translateX(-95px); opacity: 0; } 22%,72% { opacity: .85; } 50% { transform: translateX(360px); } }
-      @keyframes orbit { to { transform: rotate(360deg); } }
-      @keyframes floatA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-      @keyframes floatB { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
-      @keyframes twinkle { 0%,100% { opacity: .28; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.08); } }
-      @keyframes breathe { 0%,100% { opacity: .62; transform: scaleX(.88); } 50% { opacity: 1; transform: scaleX(1.08); } }
-      @media (prefers-reduced-motion: reduce) {
-        .dash,.scan,.orbit,.orbitReverse,.floatA,.floatB,.twinkle,.twinkle2,.rung,.rung2,.rung3 { animation: none; }
-      }
-    </style>
   </defs>
 
-  <g clip-path="url(#clip)">
-    <rect width="1200" height="620" fill="url(#bg)"/>
-    <rect x="1" y="1" width="1198" height="618" rx="29" stroke="#263746" stroke-width="2"/>
-    <rect x="34" y="34" width="1132" height="552" rx="24" fill="#07101A" stroke="#243445"/>
-    <circle cx="600" cy="284" r="280" fill="url(#helixGlow)"/>
+  <g clip-path="url(#cardClip)">
+    <rect width="1200" height="520" fill="url(#background)"/>
+    <rect x="0.75" y="0.75" width="1198.5" height="518.5" rx="23.25" stroke="#2B363F" stroke-width="1.5"/>
 
-    <g class="grid">
-      <path d="M84 80H1116M84 138H1116M84 196H1116M84 254H1116M84 312H1116M84 370H1116M84 428H1116M84 486H1116M84 544H1116" stroke="#8EA3B7"/>
-      <path d="M118 64V558M218 64V558M318 64V558M418 64V558M518 64V558M618 64V558M718 64V558M818 64V558M918 64V558M1018 64V558M1118 64V558" stroke="#8EA3B7"/>
+    <g opacity="0.11">
+      <path d="M70 86H1130M70 146H1130M70 206H1130M70 266H1130M70 326H1130M70 386H1130M70 446H1130" stroke="#C7D2DA"/>
+      <path d="M120 58V468M220 58V468M320 58V468M420 58V468M520 58V468M620 58V468M720 58V468M820 58V468M920 58V468M1020 58V468M1120 58V468" stroke="#C7D2DA"/>
     </g>
 
-    <g transform="translate(82 78)">
-      <rect width="184" height="30" rx="15" fill="#A31F34" fill-opacity=".12" stroke="#A31F34" stroke-opacity=".72"/>
-      <circle cx="20" cy="15" r="4.5" fill="#E25566" class="twinkle"/>
-      <text x="36" y="20" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="1.7">HEALTHCARE RESEARCH</text>
-    </g>
+    <g transform="translate(70 66)">
+      <rect x="0" y="0" width="236" height="28" rx="14" fill="#142028" stroke="#3B4A55"/>
+      <circle cx="18" cy="14" r="4" fill="#4DB6AC"/>
+      <text x="32" y="19" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1.6">COMPUTATIONAL BIOLOGY</text>
 
-    <g transform="translate(82 140)">
-      <text x="0" y="0" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="56" font-weight="850">Thomas de Chillaz</text>
-      <text x="2" y="42" fill="#A8B7C6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="21" font-weight="560">Computational biology / oncology / healthcare AI</text>
-      <rect x="0" y="75" width="384" height="58" rx="14" fill="#0B1A28" stroke="#2A4156"/>
-      <rect x="0" y="75" width="6" height="58" rx="3" fill="#A31F34"/>
-      <text x="24" y="99" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="850" letter-spacing="1.4">MIT CSAIL - KELLIS LAB</text>
-      <text x="24" y="120" fill="#8EA3B7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Computational Biology</text>
-      <rect x="0" y="154" width="384" height="58" rx="14" fill="#0B1A28" stroke="#2A4156"/>
-      <rect x="0" y="154" width="6" height="58" rx="3" fill="#5EEAD4"/>
-      <text x="24" y="178" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="850" letter-spacing="1.4">AIDAMS - CENTRALESUPELEC X ESSEC</text>
-      <text x="24" y="199" fill="#8EA3B7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">AI, Data, and Management</text>
-    </g>
+      <text x="0" y="86" fill="#F4F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="44" font-weight="760">Thomas de Chillaz</text>
+      <text x="2" y="118" fill="#AAB7C2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="500">Computational biology / oncology</text>
+      <text x="2" y="145" fill="#AAB7C2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="500">clinical data systems</text>
 
-    <g transform="translate(82 405)">
-      <text x="0" y="0" fill="#5EEAD4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="850" letter-spacing="1.8">FOCUS</text>
-      <g transform="translate(0 23)">
-        <rect width="210" height="38" rx="12" fill="#101E2A" stroke="#2C4054"/>
-        <circle cx="21" cy="19" r="5" fill="#5EEAD4" class="twinkle"/>
-        <text x="38" y="24" fill="#E7EEF6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760">Single-cell benchmarks</text>
-      </g>
-      <g transform="translate(224 23)">
-        <rect width="206" height="38" rx="12" fill="#101E2A" stroke="#2C4054"/>
-        <circle cx="21" cy="19" r="5" fill="#E25566" class="twinkle2"/>
-        <text x="38" y="24" fill="#E7EEF6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760">Multimodal oncology</text>
-      </g>
-      <g transform="translate(0 73)">
-        <rect width="210" height="38" rx="12" fill="#101E2A" stroke="#2C4054"/>
-        <circle cx="21" cy="19" r="5" fill="#F3A25C" class="twinkle"/>
-        <text x="38" y="24" fill="#E7EEF6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760">Dynamic bio maps</text>
-      </g>
-      <g transform="translate(224 73)">
-        <rect width="206" height="38" rx="12" fill="#101E2A" stroke="#2C4054"/>
-        <circle cx="21" cy="19" r="5" fill="#5EEAD4" class="twinkle2"/>
-        <text x="38" y="24" fill="#E7EEF6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760">Governed health AI</text>
+      <rect x="0" y="158" width="420" height="54" rx="10" fill="#0D1820" stroke="#2D3D49"/>
+      <rect x="0" y="158" width="5" height="54" rx="2.5" fill="#A31F34"/>
+      <text x="22" y="181" fill="#EEF4F7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760" letter-spacing="1.1">MIT CSAIL / KELLIS LAB</text>
+      <text x="22" y="201" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Computational biology research systems</text>
+
+      <rect x="0" y="224" width="420" height="54" rx="10" fill="#0D1820" stroke="#2D3D49"/>
+      <rect x="0" y="224" width="5" height="54" rx="2.5" fill="#4DB6AC"/>
+      <text x="22" y="247" fill="#EEF4F7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760" letter-spacing="1.1">AIDAMS / CENTRALESUPELEC X ESSEC</text>
+      <text x="22" y="267" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Artificial intelligence, data, and management</text>
+
+      <g transform="translate(0 323)">
+        <text x="0" y="0" fill="#7DD3C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="760" letter-spacing="1.4">FOCUS AREAS</text>
+        <text x="0" y="32" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Single-cell benchmarks</text>
+        <text x="214" y="32" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Multimodal oncology</text>
+        <text x="0" y="62" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Dynamic bio maps</text>
+        <text x="214" y="62" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Governed health AI</text>
       </g>
     </g>
 
-    <g transform="translate(498 104)">
-      <ellipse cx="192" cy="185" rx="250" ry="156" fill="#07101A" fill-opacity=".25" stroke="#25384A"/>
-      <ellipse cx="192" cy="185" rx="208" ry="118" fill="none" stroke="#25384A" stroke-dasharray="6 12" class="dash"/>
+    <g transform="translate(500 86)">
+      <rect x="0" y="0" width="392" height="316" rx="18" fill="#0A141B" stroke="#2B3C49"/>
+      <text x="30" y="38" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.5">STATIC DNA / REPRESENTATION SPACE</text>
 
-      <path d="M18 185C64 86 130 62 192 116C254 170 320 284 366 185C412 86 478 62 540 116" stroke="#25465A" stroke-width="6" stroke-linecap="round"/>
-      <path d="M18 185C64 284 130 308 192 254C254 200 320 86 366 185C412 284 478 308 540 254" stroke="#25465A" stroke-width="6" stroke-linecap="round"/>
-      <path d="M18 185C64 86 130 62 192 116C254 170 320 284 366 185C412 86 478 62 540 116" stroke="#5EEAD4" stroke-width="3" stroke-linecap="round" class="dash"/>
-      <path d="M18 185C64 284 130 308 192 254C254 200 320 86 366 185C412 284 478 308 540 254" stroke="#E25566" stroke-width="3" stroke-linecap="round" class="dash"/>
+      <path d="M48 158C86 82 141 65 194 110C247 155 295 238 350 158" stroke="#314753" stroke-width="7" stroke-linecap="round"/>
+      <path d="M48 158C86 234 141 251 194 206C247 161 295 78 350 158" stroke="#314753" stroke-width="7" stroke-linecap="round"/>
+      <path d="M48 158C86 82 141 65 194 110C247 155 295 238 350 158" stroke="url(#dnaA)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M48 158C86 234 141 251 194 206C247 161 295 78 350 158" stroke="url(#dnaB)" stroke-width="3" stroke-linecap="round"/>
 
-      <g stroke="url(#helixLine)" stroke-width="2.4" stroke-linecap="round">
-        <path class="rung" d="M45 138L45 232"/>
-        <path class="rung2" d="M78 98L78 272"/>
-        <path class="rung3" d="M112 83L112 287"/>
-        <path class="rung" d="M146 96L146 274"/>
-        <path class="rung2" d="M180 128L180 242"/>
-        <path class="rung3" d="M214 160L214 210"/>
-        <path class="rung" d="M248 192L248 178"/>
-        <path class="rung2" d="M282 230L282 140"/>
-        <path class="rung3" d="M316 274L316 96"/>
-        <path class="rung" d="M350 288L350 82"/>
-        <path class="rung2" d="M384 274L384 96"/>
-        <path class="rung3" d="M418 232L418 138"/>
-        <path class="rung" d="M452 184L452 186"/>
-        <path class="rung2" d="M486 139L486 231"/>
-        <path class="rung3" d="M520 115L520 255"/>
+      <g stroke="#87A8B3" stroke-opacity="0.72" stroke-width="1.6" stroke-linecap="round">
+        <path d="M75 112V204"/>
+        <path d="M106 82V234"/>
+        <path d="M137 73V243"/>
+        <path d="M168 89V227"/>
+        <path d="M199 114V202"/>
+        <path d="M230 143V173"/>
+        <path d="M261 179V137"/>
+        <path d="M292 216V100"/>
+        <path d="M323 235V81"/>
       </g>
 
-      <g filter="url(#glow)">
-        <circle cx="45" cy="138" r="7" fill="#5EEAD4" class="twinkle"/>
-        <circle cx="78" cy="272" r="7" fill="#E25566" class="twinkle2"/>
-        <circle cx="112" cy="83" r="6" fill="#F3A25C" class="twinkle"/>
-        <circle cx="180" cy="242" r="7" fill="#E25566" class="twinkle2"/>
-        <circle cx="248" cy="192" r="7" fill="#5EEAD4" class="twinkle"/>
-        <circle cx="316" cy="96" r="7" fill="#E25566" class="twinkle2"/>
-        <circle cx="384" cy="274" r="6" fill="#F3A25C" class="twinkle"/>
-        <circle cx="452" cy="184" r="7" fill="#5EEAD4" class="twinkle2"/>
-        <circle cx="520" cy="255" r="7" fill="#E25566" class="twinkle"/>
+      <g fill="#DDE7EE">
+        <circle cx="75" cy="112" r="4"/>
+        <circle cx="106" cy="234" r="4"/>
+        <circle cx="137" cy="73" r="4"/>
+        <circle cx="199" cy="202" r="4"/>
+        <circle cx="261" cy="179" r="4"/>
+        <circle cx="323" cy="81" r="4"/>
+      </g>
+      <g fill="#4DB6AC">
+        <circle cx="75" cy="204" r="4"/>
+        <circle cx="168" cy="89" r="4"/>
+        <circle cx="230" cy="143" r="4"/>
+        <circle cx="292" cy="216" r="4"/>
+      </g>
+      <g fill="#A31F34">
+        <circle cx="106" cy="82" r="4"/>
+        <circle cx="137" cy="243" r="4"/>
+        <circle cx="168" cy="227" r="4"/>
+        <circle cx="323" cy="235" r="4"/>
       </g>
 
-      <g class="orbit">
-        <circle cx="192" cy="-5" r="8" fill="#5EEAD4" filter="url(#glow)"/>
-      </g>
-      <g class="orbitReverse">
-        <circle cx="192" cy="375" r="7" fill="#E25566" filter="url(#glow)"/>
-      </g>
-
-      <g transform="translate(115 360)">
-        <rect width="154" height="34" rx="17" fill="#0B1A28" stroke="#2C4054"/>
-        <text x="77" y="22" text-anchor="middle" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="850" letter-spacing="1.3">EVALUATION FIRST</text>
-      </g>
-    </g>
-
-    <g transform="translate(850 113)">
-      <text x="0" y="0" fill="#E25566" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="850" letter-spacing="1.8">KEY INFO</text>
-      <text x="0" y="39" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="820">Research systems for biology</text>
-      <text x="0" y="69" fill="#9CADBE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">From biological signal to validated</text>
-      <text x="0" y="91" fill="#9CADBE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">representation to governed use.</text>
-
-      <rect x="0" y="128" width="262" height="1" fill="#304254"/>
-      <rect x="0" y="127" width="72" height="3" rx="1.5" fill="url(#redCyan)" class="scan"/>
-
-      <text x="0" y="168" fill="#5EEAD4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="850" letter-spacing="1.7">STACK</text>
-      <text x="0" y="199" fill="#F0F5FA" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13">Python  PyTorch  Scanpy</text>
-      <text x="0" y="222" fill="#F0F5FA" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13">AnnData  UMAP  Pydantic</text>
-      <text x="0" y="245" fill="#F0F5FA" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="13">React  TypeScript  FHIR R4</text>
-
-      <g transform="translate(0 286)">
-        <rect width="262" height="92" rx="16" fill="#0B1A28" stroke="#2A4156"/>
-        <text x="22" y="31" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="850" letter-spacing="1.3">PUBLIC WORK</text>
-        <text x="22" y="58" fill="#9CADBE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Lung Cancer Classifier</text>
-        <text x="22" y="78" fill="#9CADBE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">EEG Sleep-State Classifier</text>
+      <g transform="translate(30 263)">
+        <rect width="106" height="28" rx="14" fill="#111F27" stroke="#324550"/>
+        <text x="53" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">DATA</text>
+        <rect x="120" width="106" height="28" rx="14" fill="#111F27" stroke="#324550"/>
+        <text x="173" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">MODEL</text>
+        <rect x="240" width="120" height="28" rx="14" fill="#111F27" stroke="#324550"/>
+        <text x="300" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">EVALUATION</text>
       </g>
     </g>
 
-    <g transform="translate(82 554)">
-      <text x="0" y="0" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="1.4">github.com/ThomasdeChillaz</text>
-      <text x="275" y="0" fill="#3C5266" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">/</text>
-      <text x="294" y="0" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="1.4">linkedin.com/in/thomas-de-chillaz-9382b62a0</text>
-      <text x="705" y="0" fill="#3C5266" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">/</text>
-      <text x="724" y="0" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="1.4">thomasdechillaz.com</text>
+    <g transform="translate(936 86)">
+      <rect x="0" y="0" width="194" height="316" rx="18" fill="#0D151A" stroke="#2B3C49"/>
+      <text x="24" y="38" fill="#A31F34" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.5">KEY INFO</text>
+      <text x="24" y="75" fill="#F4F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="700">Biological models</text>
+      <text x="24" y="104" fill="#9DABB5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Evaluation, uncertainty,</text>
+      <text x="24" y="123" fill="#9DABB5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">and provenance.</text>
+
+      <rect x="24" y="154" width="158" height="1" fill="#34434D"/>
+
+      <text x="24" y="187" fill="#7DD3C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.4">STACK</text>
+      <text x="24" y="216" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Python / PyTorch</text>
+      <text x="24" y="237" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Scanpy / AnnData</text>
+      <text x="24" y="258" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">React / TypeScript</text>
+      <text x="24" y="279" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">FHIR R4 / Docker</text>
+    </g>
+
+    <g transform="translate(500 430)">
+      <rect width="630" height="1" fill="#33424C"/>
+      <text x="0" y="34" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="760" letter-spacing="1.5">SELECTED PUBLIC WORK</text>
+      <text x="0" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Lung Cancer Classifier</text>
+      <text x="218" y="66" fill="#52626E" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">/</text>
+      <text x="244" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">EEG Sleep-State Classifier</text>
+      <text x="506" y="66" fill="#52626E" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">/</text>
+      <text x="532" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Mantis</text>
     </g>
   </g>
 </svg>

@@ -1,64 +1,62 @@
-<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Pull request activity waiting for first sync</title>
-  <desc id="desc">An animated build, review, and merge pipeline. Public pull requests will appear after the included workflow runs.</desc>
+<svg width="1200" height="434" viewBox="0 0 1200 434" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Recent public pull requests by ThomasdeChillaz</title>
+  <desc id="desc">An animated pull-request panel showing recent authored work moving through build, review, and merge.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="#09141F"/><stop offset="1" stop-color="#0D1B29"/></linearGradient>
-    <linearGradient id="rail" x1="735" y1="0" x2="1100" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#A31F34"/><stop offset="0.5" stop-color="#E25566"/><stop offset="1" stop-color="#5EEAD4"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="434" gradientUnits="userSpaceOnUse"><stop stop-color="#09141F"/><stop offset="1" stop-color="#0D1B29"/></linearGradient>
+    <linearGradient id="rail" x1="735" y1="0" x2="1080" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#A31F34"/><stop offset="0.5" stop-color="#E25566"/><stop offset="1" stop-color="#5EEAD4"/></linearGradient>
     <style>
       .rail { stroke-dasharray:7 11; animation:rail 6s linear infinite; }
-      .dot1 { animation:dot1 4.8s ease-in-out infinite; }
-      .dot2 { animation:dot2 4.8s ease-in-out -1.6s infinite; }
-      .dot3 { animation:dot3 4.8s ease-in-out -3.2s infinite; }
-      .pulse { animation:pulse 2.8s ease-out infinite; transform-origin:1080px 245px; }
       @keyframes rail { to { stroke-dashoffset:-90; } }
-      @keyframes dot1 { 0% { transform:translateX(0);opacity:0 } 12% {opacity:1} 78% {transform:translateX(345px);opacity:1} 100% {transform:translateX(345px);opacity:0} }
-      @keyframes dot2 { 0% { transform:translateX(0);opacity:0 } 12% {opacity:1} 78% {transform:translateX(345px);opacity:1} 100% {transform:translateX(345px);opacity:0} }
-      @keyframes dot3 { 0% { transform:translateX(0);opacity:0 } 12% {opacity:1} 78% {transform:translateX(345px);opacity:1} 100% {transform:translateX(345px);opacity:0} }
-      @keyframes pulse { 0% { transform:scale(.4);opacity:.7 } 100% { transform:scale(1.7);opacity:0 } }
-      @media (prefers-reduced-motion: reduce) { .rail,.dot1,.dot2,.dot3,.pulse { animation:none; } }
+      @media (prefers-reduced-motion: reduce) { .rail { animation:none; } }
     </style>
   </defs>
-  <rect x="0.75" y="0.75" width="1198.5" height="418.5" rx="22.25" fill="url(#bg)" stroke="#263B4E" stroke-width="1.5"/>
+  <rect x="0.75" y="0.75" width="1198.5" height="432.5" rx="22.25" fill="url(#bg)" stroke="#263B4E" stroke-width="1.5"/>
 
-  <text x="48" y="58" fill="#5EEAD4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2">PULL REQUEST PULSE</text>
-  <text x="48" y="96" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="750">Research moves through review.</text>
-  <text x="48" y="125" fill="#8EA3B7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Live public PRs will populate automatically after the first workflow run.</text>
+  <text x="48" y="53" fill="#5EEAD4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2">PULL REQUEST PULSE</text>
+  <text x="48" y="91" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="750">Research moves through review.</text>
+  <text x="48" y="119" fill="#8EA3B7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Latest public PRs authored by @ThomasdeChillaz</text>
 
-  <g transform="translate(775 42)">
+  <g transform="translate(775 38)">
     <rect width="112" height="58" rx="13" fill="#101F2D" stroke="#2B4053"/>
     <text x="18" y="24" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">AUTHORED</text>
-    <text x="18" y="45" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">—</text>
+    <text x="18" y="46" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">1</text>
   </g>
-  <g transform="translate(902 42)">
+  <g transform="translate(902 38)">
     <rect width="112" height="58" rx="13" fill="#101F2D" stroke="#2B4053"/>
     <text x="18" y="24" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">MERGED · 12M</text>
-    <text x="18" y="45" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">—</text>
+    <text x="18" y="46" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">1</text>
   </g>
-  <g transform="translate(1029 42)">
+  <g transform="translate(1029 38)">
     <rect width="112" height="58" rx="13" fill="#101F2D" stroke="#2B4053"/>
     <text x="18" y="24" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">OPEN</text>
-    <text x="18" y="45" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">—</text>
+    <text x="18" y="46" fill="#F5F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="750">0</text>
   </g>
 
-  <rect x="48" y="166" width="1104" height="198" rx="18" fill="#0B1825" stroke="#203448"/>
-  <text x="78" y="203" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="1.5">AUTOMATED PROFILE SIGNAL</text>
-  <text x="78" y="245" fill="#F4F7F9" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="21" font-weight="650">branch → pull request → review + tests → merge</text>
-  <text x="78" y="278" fill="#8EA3B7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">The workflow reads your recent authored PRs, renders this SVG, and commits only when the panel changes.</text>
-  <text x="78" y="319" fill="#60778C" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Actions → Update PR activity → Run workflow</text>
+  <rect x="48" y="148" width="1104" height="218" rx="18" fill="#0B1825" stroke="#203448"/>
+  <text x="780" y="171" fill="#657C91" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="1">BUILD</text>
+  <text x="930" y="171" text-anchor="middle" fill="#657C91" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="1">REVIEW</text>
+  <text x="1080" y="171" text-anchor="middle" fill="#657C91" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing="1">MERGE</text>
 
-  <path d="M735 245H1080" stroke="#30465A" stroke-width="3"/>
-  <path d="M735 245H1080" stroke="url(#rail)" stroke-width="3" class="rail"/>
-  <circle cx="735" cy="245" r="9" fill="#0B1825" stroke="#A31F34" stroke-width="2"/>
-  <circle cx="908" cy="245" r="9" fill="#0B1825" stroke="#E25566" stroke-width="2"/>
-  <circle cx="1080" cy="245" r="9" fill="#0B1825" stroke="#5EEAD4" stroke-width="2"/>
-  <circle cx="735" cy="245" r="5" fill="#E25566" class="dot1"/>
-  <circle cx="735" cy="245" r="5" fill="#E25566" class="dot2"/>
-  <circle cx="735" cy="245" r="5" fill="#E25566" class="dot3"/>
-  <circle cx="1080" cy="245" r="14" fill="none" stroke="#5EEAD4" class="pulse"/>
+      <g>
+        <line x1="48" y1="246" x2="1152" y2="246" stroke="#1B2E40"/>
+        <text x="72" y="198" fill="#71879B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">ThomasdeChillaz/EEG-Sleep-State-… · #1</text>
+        <text x="72" y="223" fill="#F4F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="620">feat: ship verified technical preview</text>
+        <text x="520" y="198" fill="#657C91" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="11">+2.9k  −1.7k  ·  30 files</text>
+        <text x="520" y="222" fill="#657C91" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">Aug 9, 2026</text>
 
-  <text x="735" y="286" text-anchor="middle" fill="#8196AA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">BUILD</text>
-  <text x="908" y="286" text-anchor="middle" fill="#8196AA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">REVIEW</text>
-  <text x="1080" y="286" text-anchor="middle" fill="#8196AA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1">MERGE</text>
+        <rect x="650" y="185" width="82" height="25" rx="12.5" fill="#5EEAD4" fill-opacity="0.10" stroke="#5EEAD4" stroke-opacity="0.75"/>
+        <text x="691" y="202" text-anchor="middle" fill="#5EEAD4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="800" letter-spacing="0.8">MERGED</text>
 
-  <text x="48" y="397" fill="#536A7F" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">Waiting for first sync · generated locally in your profile repository</text>
+        <path d="M780 210H1080" stroke="#30465A" stroke-width="2.5"/>
+        <circle cx="780" cy="210" r="7" fill="#5EEAD4" fill-opacity="0.18" stroke="#5EEAD4"/>
+        <circle cx="930" cy="210" r="7" fill="#5EEAD4" fill-opacity="0.18" stroke="#5EEAD4" stroke-opacity="0.8"/>
+        <circle cx="1080" cy="210" r="7" fill="#5EEAD4" fill-opacity="0.18" stroke="#5EEAD4" stroke-opacity="0.8"/>
+        <circle cx="780" cy="210" r="4.5" fill="#5EEAD4">
+          <animate attributeName="cx" values="780;930;1080;1080" keyTimes="0;0.42;0.78;1" dur="4.00s" begin="-0.00s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.82;1" dur="4.00s" begin="-0.00s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="1080" cy="210" r="9" fill="none" stroke="#5EEAD4" stroke-opacity="0.65"><animate attributeName="r" values="8;16" dur="2.6s" begin="-0.00s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0" dur="2.6s" begin="-0.00s" repeatCount="indefinite"/></circle>
+      </g>
+
+  <text x="48" y="413" fill="#536A7F" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">Latest activity Aug 9, 2026 · public authored pull requests</text>
 </svg>

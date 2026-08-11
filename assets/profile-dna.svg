@@ -1,138 +1,181 @@
-<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="1200" height="500" viewBox="0 0 1200 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Thomas de Chillaz - computational biology profile</title>
-  <desc id="desc">A compact static computational biology profile card with DNA, single-cell analysis, oncology, and healthcare data systems.</desc>
+  <desc id="desc">A compact animated computational biology profile with a cinematic rotating DNA helix.</desc>
   <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1200" y2="520" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#071017"/>
-      <stop offset="0.55" stop-color="#0B141B"/>
-      <stop offset="1" stop-color="#101417"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#06101D"/>
+      <stop offset="0.48" stop-color="#071424"/>
+      <stop offset="1" stop-color="#050B14"/>
     </linearGradient>
-    <linearGradient id="dnaA" x1="410" y1="0" x2="920" y2="0" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4DB6AC"/>
-      <stop offset="1" stop-color="#A31F34"/>
+    <radialGradient id="spot" cx="0" cy="0" r="1" gradientTransform="translate(670 220) rotate(90) scale(260 520)">
+      <stop stop-color="#1B3551" stop-opacity="0.55"/>
+      <stop offset="0.52" stop-color="#0B1D31" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#050B14" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cyanRail" x1="0" y1="0" x2="980" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12283D"/>
+      <stop offset="0.28" stop-color="#37C5E6"/>
+      <stop offset="0.58" stop-color="#86E8F2"/>
+      <stop offset="1" stop-color="#15304A"/>
     </linearGradient>
-    <linearGradient id="dnaB" x1="410" y1="0" x2="920" y2="0" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#A31F34"/>
-      <stop offset="1" stop-color="#7DD3C7"/>
+    <linearGradient id="amberRail" x1="0" y1="0" x2="980" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#211A19"/>
+      <stop offset="0.33" stop-color="#FF8A22"/>
+      <stop offset="0.7" stop-color="#FFD24A"/>
+      <stop offset="1" stop-color="#382416"/>
     </linearGradient>
-    <clipPath id="cardClip">
-      <rect width="1200" height="520" rx="24"/>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#7B92A5"/>
+      <stop offset="0.4" stop-color="#1B3048"/>
+      <stop offset="1" stop-color="#050B14"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="clip">
+      <rect width="1200" height="500" rx="26"/>
     </clipPath>
+    <style>
+      .helix { transform-origin: 690px 268px; animation: drift 9s ease-in-out infinite; }
+      .strandA { stroke-dasharray: 82 980; animation: turnA 5.8s linear infinite; }
+      .strandB { stroke-dasharray: 82 980; animation: turnB 5.8s linear infinite; }
+      .shadowA { stroke-dasharray: 82 980; animation: turnA 5.8s linear infinite; }
+      .shadowB { stroke-dasharray: 82 980; animation: turnB 5.8s linear infinite; }
+      .ring { animation: ringPulse 5.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .ring2 { animation-delay: -1.45s; }
+      .ring3 { animation-delay: -2.9s; }
+      .ring4 { animation-delay: -4.35s; }
+      .rung { animation: rungDepth 5.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .rung2 { animation-delay: -1.45s; }
+      .rung3 { animation-delay: -2.9s; }
+      .rung4 { animation-delay: -4.35s; }
+      .trace { stroke-dasharray: 7 13; animation: trace 7s linear infinite; }
+      @keyframes turnA {
+        0% { stroke-dashoffset: 0; opacity: .75; }
+        25% { opacity: 1; }
+        50% { stroke-dashoffset: -245; opacity: .45; }
+        75% { opacity: 1; }
+        100% { stroke-dashoffset: -490; opacity: .75; }
+      }
+      @keyframes turnB {
+        0% { stroke-dashoffset: -245; opacity: .45; }
+        25% { opacity: 1; }
+        50% { stroke-dashoffset: -490; opacity: .75; }
+        75% { opacity: 1; }
+        100% { stroke-dashoffset: -735; opacity: .45; }
+      }
+      @keyframes ringPulse {
+        0%,100% { opacity: .58; transform: scale(.86); }
+        50% { opacity: 1; transform: scale(1.08); }
+      }
+      @keyframes rungDepth {
+        0%,100% { opacity: .45; transform: scaleY(.84); }
+        50% { opacity: 1; transform: scaleY(1.08); }
+      }
+      @keyframes drift {
+        0%,100% { transform: translate3d(0,0,0) rotate(-1deg); }
+        50% { transform: translate3d(0,-8px,0) rotate(1deg); }
+      }
+      @keyframes trace { to { stroke-dashoffset: -140; } }
+      @media (prefers-reduced-motion: reduce) {
+        .helix,.strandA,.strandB,.shadowA,.shadowB,.ring,.rung,.trace { animation: none; }
+      }
+    </style>
   </defs>
 
-  <g clip-path="url(#cardClip)">
-    <rect width="1200" height="520" fill="url(#background)"/>
-    <rect x="0.75" y="0.75" width="1198.5" height="518.5" rx="23.25" stroke="#2B363F" stroke-width="1.5"/>
+  <g clip-path="url(#clip)">
+    <rect width="1200" height="500" fill="url(#bg)"/>
+    <rect width="1200" height="500" fill="url(#spot)"/>
+    <rect x="0.75" y="0.75" width="1198.5" height="498.5" rx="25.25" stroke="#263A4D" stroke-width="1.5"/>
 
-    <g opacity="0.11">
-      <path d="M70 86H1130M70 146H1130M70 206H1130M70 266H1130M70 326H1130M70 386H1130M70 446H1130" stroke="#C7D2DA"/>
-      <path d="M120 58V468M220 58V468M320 58V468M420 58V468M520 58V468M620 58V468M720 58V468M820 58V468M920 58V468M1020 58V468M1120 58V468" stroke="#C7D2DA"/>
+    <g opacity="0.09">
+      <path d="M72 95H1128M72 155H1128M72 215H1128M72 275H1128M72 335H1128M72 395H1128" stroke="#B8CAD8"/>
+      <path d="M135 62V438M235 62V438M335 62V438M435 62V438M535 62V438M635 62V438M735 62V438M835 62V438M935 62V438M1035 62V438" stroke="#B8CAD8"/>
     </g>
 
-    <g transform="translate(70 66)">
-      <rect x="0" y="0" width="236" height="28" rx="14" fill="#142028" stroke="#3B4A55"/>
-      <circle cx="18" cy="14" r="4" fill="#4DB6AC"/>
-      <text x="32" y="19" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="1.6">COMPUTATIONAL BIOLOGY</text>
+    <g transform="translate(72 72)">
+      <rect width="226" height="29" rx="14.5" fill="#101D2A" stroke="#2C475E"/>
+      <circle cx="19" cy="14.5" r="4.2" fill="#37C5E6" filter="url(#softGlow)"/>
+      <text x="34" y="19.8" fill="#E8F2F8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="780" letter-spacing="1.7">COMPUTATIONAL BIOLOGY</text>
 
-      <text x="0" y="86" fill="#F4F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="44" font-weight="760">Thomas de Chillaz</text>
-      <text x="2" y="118" fill="#AAB7C2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="500">Computational biology / oncology</text>
-      <text x="2" y="145" fill="#AAB7C2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="500">clinical data systems</text>
+      <text x="0" y="92" fill="#F7FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="48" font-weight="800">Thomas de Chillaz</text>
+      <text x="2" y="130" fill="#A9B8C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">biology, oncology, and clinical data systems</text>
 
-      <rect x="0" y="158" width="420" height="54" rx="10" fill="#0D1820" stroke="#2D3D49"/>
-      <rect x="0" y="158" width="5" height="54" rx="2.5" fill="#A31F34"/>
-      <text x="22" y="181" fill="#EEF4F7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760" letter-spacing="1.1">MIT CSAIL / KELLIS LAB</text>
-      <text x="22" y="201" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Computational biology research systems</text>
-
-      <rect x="0" y="224" width="420" height="54" rx="10" fill="#0D1820" stroke="#2D3D49"/>
-      <rect x="0" y="224" width="5" height="54" rx="2.5" fill="#4DB6AC"/>
-      <text x="22" y="247" fill="#EEF4F7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="760" letter-spacing="1.1">AIDAMS / CENTRALESUPELEC X ESSEC</text>
-      <text x="22" y="267" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Artificial intelligence, data, and management</text>
-
-      <g transform="translate(0 323)">
-        <text x="0" y="0" fill="#7DD3C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="760" letter-spacing="1.4">FOCUS AREAS</text>
-        <text x="0" y="32" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Single-cell benchmarks</text>
-        <text x="214" y="32" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Multimodal oncology</text>
-        <text x="0" y="62" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Dynamic bio maps</text>
-        <text x="214" y="62" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Governed health AI</text>
-      </g>
-    </g>
-
-    <g transform="translate(500 86)">
-      <rect x="0" y="0" width="392" height="316" rx="18" fill="#0A141B" stroke="#2B3C49"/>
-      <text x="30" y="38" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.5">STATIC DNA / REPRESENTATION SPACE</text>
-
-      <path d="M48 158C86 82 141 65 194 110C247 155 295 238 350 158" stroke="#314753" stroke-width="7" stroke-linecap="round"/>
-      <path d="M48 158C86 234 141 251 194 206C247 161 295 78 350 158" stroke="#314753" stroke-width="7" stroke-linecap="round"/>
-      <path d="M48 158C86 82 141 65 194 110C247 155 295 238 350 158" stroke="url(#dnaA)" stroke-width="3" stroke-linecap="round"/>
-      <path d="M48 158C86 234 141 251 194 206C247 161 295 78 350 158" stroke="url(#dnaB)" stroke-width="3" stroke-linecap="round"/>
-
-      <g stroke="#87A8B3" stroke-opacity="0.72" stroke-width="1.6" stroke-linecap="round">
-        <path d="M75 112V204"/>
-        <path d="M106 82V234"/>
-        <path d="M137 73V243"/>
-        <path d="M168 89V227"/>
-        <path d="M199 114V202"/>
-        <path d="M230 143V173"/>
-        <path d="M261 179V137"/>
-        <path d="M292 216V100"/>
-        <path d="M323 235V81"/>
+      <g transform="translate(0 168)">
+        <rect width="386" height="52" rx="10" fill="#0A1724" stroke="#263C50"/>
+        <rect width="5" height="52" rx="2.5" fill="#FF8A22"/>
+        <text x="22" y="23" fill="#F2F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="800" letter-spacing="1.2">MIT CSAIL / KELLIS LAB</text>
+        <text x="22" y="42" fill="#8FA1B1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">computational biology research systems</text>
       </g>
 
-      <g fill="#DDE7EE">
-        <circle cx="75" cy="112" r="4"/>
-        <circle cx="106" cy="234" r="4"/>
-        <circle cx="137" cy="73" r="4"/>
-        <circle cx="199" cy="202" r="4"/>
-        <circle cx="261" cy="179" r="4"/>
-        <circle cx="323" cy="81" r="4"/>
-      </g>
-      <g fill="#4DB6AC">
-        <circle cx="75" cy="204" r="4"/>
-        <circle cx="168" cy="89" r="4"/>
-        <circle cx="230" cy="143" r="4"/>
-        <circle cx="292" cy="216" r="4"/>
-      </g>
-      <g fill="#A31F34">
-        <circle cx="106" cy="82" r="4"/>
-        <circle cx="137" cy="243" r="4"/>
-        <circle cx="168" cy="227" r="4"/>
-        <circle cx="323" cy="235" r="4"/>
+      <g transform="translate(0 234)">
+        <rect width="386" height="52" rx="10" fill="#0A1724" stroke="#263C50"/>
+        <rect width="5" height="52" rx="2.5" fill="#37C5E6"/>
+        <text x="22" y="23" fill="#F2F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="800" letter-spacing="1.2">AIDAMS / CENTRALESUPELEC X ESSEC</text>
+        <text x="22" y="42" fill="#8FA1B1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">AI, data, and management</text>
       </g>
 
-      <g transform="translate(30 263)">
-        <rect width="106" height="28" rx="14" fill="#111F27" stroke="#324550"/>
-        <text x="53" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">DATA</text>
-        <rect x="120" width="106" height="28" rx="14" fill="#111F27" stroke="#324550"/>
-        <text x="173" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">MODEL</text>
-        <rect x="240" width="120" height="28" rx="14" fill="#111F27" stroke="#324550"/>
-        <text x="300" y="19" text-anchor="middle" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">EVALUATION</text>
+      <g transform="translate(0 334)">
+        <text x="0" y="0" fill="#37C5E6" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="1.5">FOCUS</text>
+        <text x="0" y="29" fill="#D8E3EA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">single-cell evaluation</text>
+        <text x="190" y="29" fill="#D8E3EA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">multimodal oncology</text>
+        <text x="0" y="57" fill="#D8E3EA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">dynamic biological maps</text>
+        <text x="190" y="57" fill="#D8E3EA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">governed health AI</text>
       </g>
     </g>
 
-    <g transform="translate(936 86)">
-      <rect x="0" y="0" width="194" height="316" rx="18" fill="#0D151A" stroke="#2B3C49"/>
-      <text x="24" y="38" fill="#A31F34" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.5">KEY INFO</text>
-      <text x="24" y="75" fill="#F4F7FA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="700">Biological models</text>
-      <text x="24" y="104" fill="#9DABB5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Evaluation, uncertainty,</text>
-      <text x="24" y="123" fill="#9DABB5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">and provenance.</text>
+    <g class="helix">
+      <path d="M480 258C555 148 638 118 718 188C798 258 882 376 958 258C1034 140 1110 126 1174 190" stroke="#07101A" stroke-width="31" stroke-linecap="round" opacity=".42"/>
+      <path d="M480 258C555 368 638 398 718 328C798 258 882 140 958 258C1034 376 1110 390 1174 326" stroke="#07101A" stroke-width="31" stroke-linecap="round" opacity=".42"/>
+      <path d="M480 258C555 148 638 118 718 188C798 258 882 376 958 258C1034 140 1110 126 1174 190" stroke="#152A3D" stroke-width="22" stroke-linecap="round"/>
+      <path d="M480 258C555 368 638 398 718 328C798 258 882 140 958 258C1034 376 1110 390 1174 326" stroke="#152A3D" stroke-width="22" stroke-linecap="round"/>
+      <path class="shadowA" d="M480 258C555 148 638 118 718 188C798 258 882 376 958 258C1034 140 1110 126 1174 190" stroke="#06101B" stroke-width="26" stroke-linecap="round" opacity=".78"/>
+      <path class="shadowB" d="M480 258C555 368 638 398 718 328C798 258 882 140 958 258C1034 376 1110 390 1174 326" stroke="#06101B" stroke-width="26" stroke-linecap="round" opacity=".78"/>
+      <path class="strandA" d="M480 258C555 148 638 118 718 188C798 258 882 376 958 258C1034 140 1110 126 1174 190" stroke="url(#cyanRail)" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)"/>
+      <path class="strandB" d="M480 258C555 368 638 398 718 328C798 258 882 140 958 258C1034 376 1110 390 1174 326" stroke="url(#amberRail)" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)"/>
 
-      <rect x="24" y="154" width="158" height="1" fill="#34434D"/>
+      <g stroke="url(#metal)" stroke-width="5.5" stroke-linecap="round">
+        <path class="rung" d="M524 199L524 317"/>
+        <path class="rung rung2" d="M569 154L569 362"/>
+        <path class="rung rung3" d="M614 132L614 384"/>
+        <path class="rung rung4" d="M659 147L659 369"/>
+        <path class="rung" d="M704 178L704 338"/>
+        <path class="rung rung2" d="M749 214L749 302"/>
+        <path class="rung rung3" d="M794 250L794 266"/>
+        <path class="rung rung4" d="M839 303L839 213"/>
+        <path class="rung" d="M884 358L884 158"/>
+        <path class="rung rung2" d="M929 383L929 133"/>
+        <path class="rung rung3" d="M974 363L974 153"/>
+        <path class="rung rung4" d="M1019 314L1019 202"/>
+        <path class="rung" d="M1064 270L1064 246"/>
+        <path class="rung rung2" d="M1109 231L1109 285"/>
+      </g>
 
-      <text x="24" y="187" fill="#7DD3C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="760" letter-spacing="1.4">STACK</text>
-      <text x="24" y="216" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Python / PyTorch</text>
-      <text x="24" y="237" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Scanpy / AnnData</text>
-      <text x="24" y="258" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">React / TypeScript</text>
-      <text x="24" y="279" fill="#DDE7EE" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">FHIR R4 / Docker</text>
+      <g fill="none" stroke-width="4" filter="url(#softGlow)">
+        <circle class="ring" cx="524" cy="199" r="9" stroke="#FFD24A"/>
+        <circle class="ring ring2" cx="569" cy="362" r="9" stroke="#FF8A22"/>
+        <circle class="ring ring3" cx="614" cy="132" r="8" stroke="#37C5E6"/>
+        <circle class="ring ring4" cx="659" cy="369" r="9" stroke="#FFD24A"/>
+        <circle class="ring" cx="704" cy="178" r="8" stroke="#37C5E6"/>
+        <circle class="ring ring2" cx="749" cy="302" r="8" stroke="#FF8A22"/>
+        <circle class="ring ring3" cx="884" cy="358" r="9" stroke="#FFD24A"/>
+        <circle class="ring ring4" cx="929" cy="133" r="8" stroke="#37C5E6"/>
+        <circle class="ring" cx="1019" cy="314" r="8" stroke="#FF8A22"/>
+        <circle class="ring ring2" cx="1109" cy="231" r="8" stroke="#37C5E6"/>
+      </g>
     </g>
 
-    <g transform="translate(500 430)">
-      <rect width="630" height="1" fill="#33424C"/>
-      <text x="0" y="34" fill="#8EA0AD" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="760" letter-spacing="1.5">SELECTED PUBLIC WORK</text>
-      <text x="0" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Lung Cancer Classifier</text>
-      <text x="218" y="66" fill="#52626E" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">/</text>
-      <text x="244" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">EEG Sleep-State Classifier</text>
-      <text x="506" y="66" fill="#52626E" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">/</text>
-      <text x="532" y="66" fill="#DDE7EE" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Mantis</text>
+    <g transform="translate(480 438)">
+      <rect width="650" height="32" rx="16" fill="#071422" fill-opacity=".68" stroke="#263C50"/>
+      <text x="24" y="21" fill="#FFD24A" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="1.4">STACK</text>
+      <text x="92" y="21" fill="#D8E3EA" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="12">Python / PyTorch / Scanpy / AnnData / TypeScript / FHIR R4</text>
     </g>
+
+    <path class="trace" d="M480 420H1130" stroke="#2C5670" stroke-width="1.4" opacity=".75"/>
+    <path d="M480 420H1130" stroke="#07101A" stroke-width="5" opacity=".28"/>
   </g>
 </svg>

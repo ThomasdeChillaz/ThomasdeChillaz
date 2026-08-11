@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/profile-dna.svg" width="100%" alt="Thomas de Chillaz - computational biology, oncology, healthcare AI, MIT CSAIL Kellis Lab, AIDAMS CentraleSupelec x ESSEC" />
+  <img src="./assets/profile-dna.svg" width="100%" alt="Thomas de Chillaz - biology, oncology, healthcare AI, MIT CSAIL Kellis Lab, AIDAMS CentraleSupelec x ESSEC" />
   <br />
   <a href="https://thomasdechillaz.com"><strong>Website</strong></a>
   &nbsp;&middot;&nbsp;

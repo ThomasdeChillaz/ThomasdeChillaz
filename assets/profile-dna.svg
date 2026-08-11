@@ -45,14 +45,14 @@
       .strandB { stroke-dasharray: 82 980; animation: turnB 5.8s linear infinite; }
       .shadowA { stroke-dasharray: 82 980; animation: turnA 5.8s linear infinite; }
       .shadowB { stroke-dasharray: 82 980; animation: turnB 5.8s linear infinite; }
-      .ring { animation: ringPulse 5.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-      .ring2 { animation-delay: -1.45s; }
-      .ring3 { animation-delay: -2.9s; }
-      .ring4 { animation-delay: -4.35s; }
       .rung { animation: rungDepth 5.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
       .rung2 { animation-delay: -1.45s; }
       .rung3 { animation-delay: -2.9s; }
       .rung4 { animation-delay: -4.35s; }
+      .base { animation: baseDepth 5.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .base2 { animation-delay: -1.45s; }
+      .base3 { animation-delay: -2.9s; }
+      .base4 { animation-delay: -4.35s; }
       .trace { stroke-dasharray: 7 13; animation: trace 7s linear infinite; }
       @keyframes turnA {
         0% { stroke-dashoffset: 0; opacity: .75; }
@@ -68,13 +68,13 @@
         75% { opacity: 1; }
         100% { stroke-dashoffset: -735; opacity: .45; }
       }
-      @keyframes ringPulse {
-        0%,100% { opacity: .58; transform: scale(.86); }
-        50% { opacity: 1; transform: scale(1.08); }
-      }
       @keyframes rungDepth {
         0%,100% { opacity: .45; transform: scaleY(.84); }
         50% { opacity: 1; transform: scaleY(1.08); }
+      }
+      @keyframes baseDepth {
+        0%,100% { opacity: .46; transform: scaleY(.86); }
+        50% { opacity: 1; transform: scaleY(1.04); }
       }
       @keyframes drift {
         0%,100% { transform: translate3d(0,0,0) rotate(-1deg); }
@@ -82,7 +82,7 @@
       }
       @keyframes trace { to { stroke-dashoffset: -140; } }
       @media (prefers-reduced-motion: reduce) {
-        .helix,.strandA,.strandB,.shadowA,.shadowB,.ring,.rung,.trace { animation: none; }
+        .helix,.strandA,.strandB,.shadowA,.shadowB,.rung,.base,.trace { animation: none; }
       }
     </style>
   </defs>
@@ -99,8 +99,8 @@
 
     <g transform="translate(72 72)">
       <rect width="226" height="29" rx="14.5" fill="#101D2A" stroke="#2C475E"/>
-      <circle cx="19" cy="14.5" r="4.2" fill="#37C5E6" filter="url(#softGlow)"/>
-      <text x="34" y="19.8" fill="#E8F2F8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="780" letter-spacing="1.7">COMPUTATIONAL BIOLOGY</text>
+      <rect x="16" y="11.5" width="12" height="6" rx="3" fill="#37C5E6"/>
+      <text x="40" y="19.8" fill="#E8F2F8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="780" letter-spacing="1.7">COMPUTATIONAL BIOLOGY</text>
 
       <text x="0" y="92" fill="#F7FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="48" font-weight="800">Thomas de Chillaz</text>
       <text x="2" y="130" fill="#A9B8C7" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18">biology, oncology, and clinical data systems</text>
@@ -138,34 +138,117 @@
       <path class="strandA" d="M480 258C555 148 638 118 718 188C798 258 882 376 958 258C1034 140 1110 126 1174 190" stroke="url(#cyanRail)" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)"/>
       <path class="strandB" d="M480 258C555 368 638 398 718 328C798 258 882 140 958 258C1034 376 1110 390 1174 326" stroke="url(#amberRail)" stroke-width="10" stroke-linecap="round" filter="url(#softGlow)"/>
 
-      <g stroke="url(#metal)" stroke-width="5.5" stroke-linecap="round">
+      <g stroke="#08111B" stroke-width="10" stroke-linecap="round" opacity=".82">
+        <path d="M502 226L502 290"/>
+        <path d="M524 199L524 317"/>
+        <path d="M547 174L547 342"/>
+        <path d="M569 154L569 362"/>
+        <path d="M592 139L592 377"/>
+        <path d="M614 132L614 384"/>
+        <path d="M637 139L637 377"/>
+        <path d="M659 147L659 369"/>
+        <path d="M682 164L682 352"/>
+        <path d="M704 178L704 338"/>
+        <path d="M727 196L727 320"/>
+        <path d="M749 214L749 302"/>
+        <path d="M772 236L772 280"/>
+        <path d="M794 250L794 266"/>
+        <path d="M817 276L817 240"/>
+        <path d="M839 303L839 213"/>
+        <path d="M862 335L862 181"/>
+        <path d="M884 358L884 158"/>
+        <path d="M907 378L907 138"/>
+        <path d="M929 383L929 133"/>
+        <path d="M952 376L952 140"/>
+        <path d="M974 363L974 153"/>
+        <path d="M997 337L997 179"/>
+        <path d="M1019 314L1019 202"/>
+        <path d="M1042 290L1042 226"/>
+        <path d="M1064 270L1064 246"/>
+        <path d="M1087 248L1087 268"/>
+        <path d="M1109 231L1109 285"/>
+      </g>
+
+      <g stroke="url(#metal)" stroke-width="4.2" stroke-linecap="round">
+        <path class="rung rung2" d="M502 226L502 290"/>
         <path class="rung" d="M524 199L524 317"/>
+        <path class="rung rung3" d="M547 174L547 342"/>
         <path class="rung rung2" d="M569 154L569 362"/>
+        <path class="rung rung4" d="M592 139L592 377"/>
         <path class="rung rung3" d="M614 132L614 384"/>
+        <path class="rung" d="M637 139L637 377"/>
         <path class="rung rung4" d="M659 147L659 369"/>
+        <path class="rung rung2" d="M682 164L682 352"/>
         <path class="rung" d="M704 178L704 338"/>
+        <path class="rung rung3" d="M727 196L727 320"/>
         <path class="rung rung2" d="M749 214L749 302"/>
+        <path class="rung rung4" d="M772 236L772 280"/>
         <path class="rung rung3" d="M794 250L794 266"/>
+        <path class="rung" d="M817 276L817 240"/>
         <path class="rung rung4" d="M839 303L839 213"/>
+        <path class="rung rung2" d="M862 335L862 181"/>
         <path class="rung" d="M884 358L884 158"/>
+        <path class="rung rung3" d="M907 378L907 138"/>
         <path class="rung rung2" d="M929 383L929 133"/>
+        <path class="rung rung4" d="M952 376L952 140"/>
         <path class="rung rung3" d="M974 363L974 153"/>
+        <path class="rung" d="M997 337L997 179"/>
         <path class="rung rung4" d="M1019 314L1019 202"/>
+        <path class="rung rung2" d="M1042 290L1042 226"/>
         <path class="rung" d="M1064 270L1064 246"/>
+        <path class="rung rung3" d="M1087 248L1087 268"/>
         <path class="rung rung2" d="M1109 231L1109 285"/>
       </g>
 
-      <g fill="none" stroke-width="4" filter="url(#softGlow)">
-        <circle class="ring" cx="524" cy="199" r="9" stroke="#FFD24A"/>
-        <circle class="ring ring2" cx="569" cy="362" r="9" stroke="#FF8A22"/>
-        <circle class="ring ring3" cx="614" cy="132" r="8" stroke="#37C5E6"/>
-        <circle class="ring ring4" cx="659" cy="369" r="9" stroke="#FFD24A"/>
-        <circle class="ring" cx="704" cy="178" r="8" stroke="#37C5E6"/>
-        <circle class="ring ring2" cx="749" cy="302" r="8" stroke="#FF8A22"/>
-        <circle class="ring ring3" cx="884" cy="358" r="9" stroke="#FFD24A"/>
-        <circle class="ring ring4" cx="929" cy="133" r="8" stroke="#37C5E6"/>
-        <circle class="ring" cx="1019" cy="314" r="8" stroke="#FF8A22"/>
-        <circle class="ring ring2" cx="1109" cy="231" r="8" stroke="#37C5E6"/>
+      <g stroke-width="6.5" stroke-linecap="round" filter="url(#softGlow)">
+        <path class="base base2" d="M502 226L502 255" stroke="#37C5E6"/>
+        <path class="base base2" d="M502 261L502 290" stroke="#FFD24A"/>
+        <path class="base" d="M524 199L524 254" stroke="#FF8A22"/>
+        <path class="base" d="M524 262L524 317" stroke="#37C5E6"/>
+        <path class="base base3" d="M547 174L547 255" stroke="#37C5E6"/>
+        <path class="base base3" d="M547 261L547 342" stroke="#FFD24A"/>
+        <path class="base base2" d="M569 154L569 254" stroke="#FFD24A"/>
+        <path class="base base2" d="M569 262L569 362" stroke="#FF8A22"/>
+        <path class="base base4" d="M592 139L592 255" stroke="#37C5E6"/>
+        <path class="base base4" d="M592 261L592 377" stroke="#FFD24A"/>
+        <path class="base base3" d="M614 132L614 255" stroke="#FF8A22"/>
+        <path class="base base3" d="M614 261L614 384" stroke="#37C5E6"/>
+        <path class="base" d="M637 139L637 255" stroke="#37C5E6"/>
+        <path class="base" d="M637 261L637 377" stroke="#FFD24A"/>
+        <path class="base base4" d="M659 147L659 254" stroke="#FFD24A"/>
+        <path class="base base4" d="M659 262L659 369" stroke="#FF8A22"/>
+        <path class="base base2" d="M682 164L682 255" stroke="#37C5E6"/>
+        <path class="base base2" d="M682 261L682 352" stroke="#FFD24A"/>
+        <path class="base" d="M704 178L704 255" stroke="#FF8A22"/>
+        <path class="base" d="M704 261L704 338" stroke="#37C5E6"/>
+        <path class="base base3" d="M727 196L727 255" stroke="#37C5E6"/>
+        <path class="base base3" d="M727 261L727 320" stroke="#FFD24A"/>
+        <path class="base base2" d="M749 214L749 255" stroke="#FFD24A"/>
+        <path class="base base2" d="M749 261L749 302" stroke="#FF8A22"/>
+        <path class="base base4" d="M772 236L772 254" stroke="#37C5E6"/>
+        <path class="base base4" d="M772 262L772 280" stroke="#FFD24A"/>
+        <path class="base base3" d="M817 276L817 260" stroke="#FF8A22"/>
+        <path class="base base3" d="M817 256L817 240" stroke="#37C5E6"/>
+        <path class="base base4" d="M839 303L839 261" stroke="#37C5E6"/>
+        <path class="base base4" d="M839 255L839 213" stroke="#FFD24A"/>
+        <path class="base base2" d="M862 335L862 261" stroke="#FFD24A"/>
+        <path class="base base2" d="M862 255L862 181" stroke="#FF8A22"/>
+        <path class="base" d="M884 358L884 262" stroke="#37C5E6"/>
+        <path class="base" d="M884 254L884 158" stroke="#FFD24A"/>
+        <path class="base base3" d="M907 378L907 262" stroke="#FF8A22"/>
+        <path class="base base3" d="M907 254L907 138" stroke="#37C5E6"/>
+        <path class="base base2" d="M929 383L929 262" stroke="#37C5E6"/>
+        <path class="base base2" d="M929 254L929 133" stroke="#FFD24A"/>
+        <path class="base base4" d="M952 376L952 262" stroke="#FFD24A"/>
+        <path class="base base4" d="M952 254L952 140" stroke="#FF8A22"/>
+        <path class="base base3" d="M974 363L974 262" stroke="#37C5E6"/>
+        <path class="base base3" d="M974 254L974 153" stroke="#FFD24A"/>
+        <path class="base" d="M997 337L997 262" stroke="#FF8A22"/>
+        <path class="base" d="M997 254L997 179" stroke="#37C5E6"/>
+        <path class="base base4" d="M1019 314L1019 261" stroke="#37C5E6"/>
+        <path class="base base4" d="M1019 255L1019 202" stroke="#FFD24A"/>
+        <path class="base base2" d="M1042 290L1042 261" stroke="#FFD24A"/>
+        <path class="base base2" d="M1042 255L1042 226" stroke="#FF8A22"/>
       </g>
     </g>
 

@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thomasdechillaz.com"),
+  alternates: {
+    canonical: "/",
+  },
   title: "Thomas de Chillaz | AI, Computational Biology & Space",
   description:
     "Researching complex systems from single cells to distant worlds, and building AI products that make knowledge useful.",
@@ -26,6 +29,19 @@ export const metadata: Metadata = {
     "astronomy",
   ],
   authors: [{ name: "Thomas de Chillaz" }],
+  creator: "Thomas de Chillaz",
+  publisher: "Thomas de Chillaz",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     title: "Thomas de Chillaz — AI for science, systems & discovery",
     description:

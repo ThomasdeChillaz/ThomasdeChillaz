@@ -249,6 +249,68 @@ export default function PortfolioExperience() {
           </div>
         </section>
 
+        <section
+          className="research-note"
+          id="mit-csail-research-note"
+          data-research-note="true"
+          data-keyboard-stop
+          aria-labelledby="mit-note-title"
+        >
+          <div className="research-note__heading" data-reveal>
+            <p className="eyebrow"><span /> Field note / MIT CSAIL</p>
+            <h2 id="mit-note-title">Building research<br /><em>with a team.</em></h2>
+            <p className="research-note__lede">
+              My summer at MIT CSAIL was an immersion in the full research loop: framing ambitious questions, building AI systems that make scientific knowledge easier to navigate, testing ideas with collaborators, and turning the strongest results into workshop paper submissions.
+            </p>
+          </div>
+          <div className="research-note__story" data-reveal>
+            <article>
+              <h3 className="research-note__label">What I did</h3>
+              <p>
+                I worked at the intersection of artificial intelligence, computational biology, and interactive research tools. The work demanded more than a model: it meant making representations inspectable, connecting technical decisions to scientific questions, and shaping interfaces that help a team reason together.
+              </p>
+            </article>
+            <article>
+              <h3 className="research-note__label">What I learned</h3>
+              <p>
+                The fastest progress came through collaboration—sharing incomplete ideas early, challenging assumptions, and keeping the path from experiment to evidence visible. That experience now guides how I approach MANTIS, single-cell exploration, and every research product I build.
+              </p>
+            </article>
+          </div>
+          <div className="research-note__gallery" data-reveal>
+            <figure className="research-note__media research-note__media--architecture">
+              <Image
+                src="/mit-csail-stata-center.webp"
+                alt="The angular facade and courtyard of MIT's Stata Center beneath a blue Cambridge sky"
+                width={864}
+                height={1536}
+                sizes="(max-width: 760px) 100vw, 40vw"
+                unoptimized
+              />
+              <figcaption>MIT Stata Center — the setting for a summer of research and iteration.</figcaption>
+            </figure>
+            <figure className="research-note__media research-note__media--team">
+              <Image
+                src="/mit-csail-collaborators.webp"
+                alt="Thomas de Chillaz standing with two research collaborators in front of MIT's illuminated Great Dome"
+                width={864}
+                height={1536}
+                sizes="(max-width: 760px) 100vw, 52vw"
+                unoptimized
+              />
+              <figcaption>Research is a team sport: building, questioning, and learning together.</figcaption>
+            </figure>
+          </div>
+          <a
+            className="source-link research-note__source"
+            href="https://www.linkedin.com/posts/thomas-de-chillaz-9382b62a0_mit-csail-artificialintelligence-activity-7500243180504715264-Win8"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Read the original LinkedIn reflection <span aria-hidden="true">↗</span>
+          </a>
+        </section>
+
         <section className="chapter split-section space-section" id="space" data-chapter="space" data-scroll-scene="space" aria-labelledby="space-title">
           <div className="chapter-heading sticky-copy" data-scene-step="space-intro" data-scroll-copy data-beat-range="-0.03,0.02,0.15,0.23">
             <p className="eyebrow"><span /> 02 / Astronomy</p>

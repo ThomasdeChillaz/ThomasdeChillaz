@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Search visibility is independent from model-training permission.
+User-agent: GPTBot
+Disallow: /
+
+Sitemap: https://thomasdechillaz.com/sitemap.xml

@@ -109,13 +109,19 @@ test("publishes canonical, social, and structured identity metadata", async () =
 });
 
 test("ships crawl directives and a canonical XML sitemap", async () => {
-  const [robots, sitemap] = await Promise.all([
+  const [robots, sitemap, deployedRobots, deployedSitemap] = await Promise.all([
     readFile(new URL("../public/robots.txt", import.meta.url), "utf8"),
     readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8"),
+    readFile(new URL("../robots.txt", import.meta.url), "utf8"),
+    readFile(new URL("../sitemap.xml", import.meta.url), "utf8"),
   ]);
 
+  assert.equal(deployedRobots, robots);
+  assert.equal(deployedSitemap, sitemap);
   assert.match(robots, /^User-agent:\s*\*/im);
   assert.match(robots, /^Allow:\s*\/$/im);
+  assert.match(robots, /User-agent:\s*GPTBot\s*\r?\nDisallow:\s*\//i);
+  assert.match(robots, /User-agent:\s*OAI-SearchBot\s*\r?\nAllow:\s*\//i);
   assert.match(robots, /^Sitemap:\s*https:\/\/thomasdechillaz\.com\/sitemap\.xml$/im);
   assert.match(sitemap, /<urlset\b[^>]*xmlns=["']http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9["']/i);
   assert.match(sitemap, /<loc>https:\/\/thomasdechillaz\.com\/<\/loc>/i);
@@ -148,9 +154,10 @@ test("renders the MIT CSAIL research note with two attributed LinkedIn images", 
 test("smooths research-note media with compositor-safe motion and a reduced-motion fallback", async () => {
   const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   const media = extractCssBlock(css, ".research-note__media");
+  const activeMedia = extractCssBlock(css, ".research-note__media:hover");
   const reducedMotion = extractCssBlock(css, "@media (prefers-reduced-motion: reduce)");
 
-  assert.match(media, /will-change:\s*(?:transform\s*,\s*opacity|opacity\s*,\s*transform)/);
+  assert.match(activeMedia, /will-change:\s*(?:transform\s*,\s*opacity|opacity\s*,\s*transform)/);
   assert.match(media, /transition:[^;}]*\btransform\b[^;}]*,?[^;}]*\bopacity\b|transition:[^;}]*\bopacity\b[^;}]*,?[^;}]*\btransform\b/s);
   assert.doesNotMatch(media, /transition:\s*all\b/);
   assert.match(reducedMotion, /\.research-note__media\s*\{[^}]*transform:\s*none[^}]*transition:\s*none/s);

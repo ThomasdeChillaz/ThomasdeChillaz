@@ -40,6 +40,23 @@ function extractCssBlock(css, selector) {
   assert.fail(`Unclosed CSS block: ${selector}`);
 }
 
+function extractJsonLd(html) {
+  return [...html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
+    .flatMap((match) => {
+      const value = JSON.parse(match[1]);
+      return Array.isArray(value?.["@graph"]) ? value["@graph"] : [value];
+    });
+}
+
+function findJsonLdType(documents, type) {
+  return documents.find((document) => {
+    const types = Array.isArray(document?.["@type"])
+      ? document["@type"]
+      : [document?.["@type"]];
+    return types.includes(type);
+  });
+}
+
 test("server-renders Thomas's complete CV narrative", async () => {
   const response = await render();
   assert.equal(response.status, 200);
@@ -64,6 +81,79 @@ test("server-renders Thomas's complete CV narrative", async () => {
   assert.match(html, /↗/);
   assert.doesNotMatch(html, /Â|Ã|â/);
   assert.match(html, /ESSEC/);
+});
+
+test("publishes canonical, social, and structured identity metadata", async () => {
+  const response = await render();
+  const html = await response.text();
+  const jsonLd = extractJsonLd(html);
+  const person = findJsonLdType(jsonLd, "Person");
+  const website = findJsonLdType(jsonLd, "WebSite");
+  const article = findJsonLdType(jsonLd, "Article");
+
+  assert.match(html, /<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/thomasdechillaz\.com\/?["']/i);
+  assert.match(html, /<meta[^>]*property=["']og:url["'][^>]*content=["']https:\/\/thomasdechillaz\.com\/?["']/i);
+  assert.match(html, /<meta[^>]*property=["']og:image["'][^>]*content=["']https:\/\/thomasdechillaz\.com\/og\.png["']/i);
+  assert.match(html, /<meta[^>]*name=["']twitter:card["'][^>]*content=["']summary_large_image["']/i);
+
+  assert.equal(person?.name, "Thomas de Chillaz");
+  assert.equal(person?.url, "https://thomasdechillaz.com/");
+  assert.ok(
+    person?.sameAs?.includes("https://www.linkedin.com/in/thomas-de-chillaz-9382b62a0"),
+  );
+  assert.equal(website?.url, "https://thomasdechillaz.com/");
+  assert.equal(website?.author?.["@id"], person?.["@id"]);
+  assert.match(article?.headline ?? "", /MIT CSAIL/i);
+  assert.equal(article?.author?.["@id"], person?.["@id"]);
+  assert.equal(article?.mainEntityOfPage, "https://thomasdechillaz.com/#mit-csail-research-note");
+});
+
+test("ships crawl directives and a canonical XML sitemap", async () => {
+  const [robots, sitemap] = await Promise.all([
+    readFile(new URL("../public/robots.txt", import.meta.url), "utf8"),
+    readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(robots, /^User-agent:\s*\*/im);
+  assert.match(robots, /^Allow:\s*\/$/im);
+  assert.match(robots, /^Sitemap:\s*https:\/\/thomasdechillaz\.com\/sitemap\.xml$/im);
+  assert.match(sitemap, /<urlset\b[^>]*xmlns=["']http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9["']/i);
+  assert.match(sitemap, /<loc>https:\/\/thomasdechillaz\.com\/<\/loc>/i);
+  assert.doesNotMatch(sitemap, /localhost|example\.com/i);
+});
+
+test("renders the MIT CSAIL research note with two attributed LinkedIn images", async () => {
+  const response = await render();
+  const html = await response.text();
+  const note = html.match(
+    /<section[^>]*(?:id|data-research-note)=["'](?:mit-csail-research-note|true)["'][^>]*>[\s\S]*?<\/section>/i,
+  )?.[0] ?? "";
+  const images = [...note.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
+  const sourceUrl = "https://www.linkedin.com/posts/thomas-de-chillaz-9382b62a0_mit-csail-artificialintelligence-activity-7500243180504715264-Win8";
+
+  assert.match(note, /MIT CSAIL/i);
+  assert.match(note, /what I (?:did|built|worked on)|my work|research/i);
+  assert.equal(images.length, 2);
+  assert.match(images[0], /src=["'][^"']*mit-csail-stata-center\.webp["']/i);
+  assert.match(images[1], /src=["'][^"']*mit-csail-collaborators\.webp["']/i);
+  images.forEach((image) => {
+    const alt = image.match(/\balt=["']([^"']+)["']/i)?.[1] ?? "";
+    assert.ok(alt.length >= 20, `Expected meaningful image alt text, received: ${alt}`);
+    assert.doesNotMatch(alt, /^(?:image|photo|linkedin|picture)\s*\d*$/i);
+  });
+  assert.match(note, new RegExp(`href=["']${sourceUrl}["']`, "i"));
+  assert.match(note, /target=["']_blank["'][^>]*rel=["'][^"']*noreferrer[^"']*["']/i);
+});
+
+test("smooths research-note media with compositor-safe motion and a reduced-motion fallback", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  const media = extractCssBlock(css, ".research-note__media");
+  const reducedMotion = extractCssBlock(css, "@media (prefers-reduced-motion: reduce)");
+
+  assert.match(media, /will-change:\s*(?:transform\s*,\s*opacity|opacity\s*,\s*transform)/);
+  assert.match(media, /transition:[^;}]*\btransform\b[^;}]*,?[^;}]*\bopacity\b|transition:[^;}]*\bopacity\b[^;}]*,?[^;}]*\btransform\b/s);
+  assert.doesNotMatch(media, /transition:\s*all\b/);
+  assert.match(reducedMotion, /\.research-note__media\s*\{[^}]*transform:\s*none[^}]*transition:\s*none/s);
 });
 
 test("calculates reversible normalized camera progress", async () => {
